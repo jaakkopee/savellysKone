@@ -301,7 +301,6 @@ class Song:
     
 
 
-
 if __name__ == "__main__":
     song = Song()
     song.generateBars(32, 6, 'C', 'harmonics', 4, 1.5)
