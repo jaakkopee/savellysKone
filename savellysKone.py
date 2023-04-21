@@ -112,29 +112,25 @@ class Bar:
         return
 
     def generateToneList(self, toneCount=6, rootNote='D', scale='dorian'):
-        if len(self.toneList)==0:
-            noteColl = []
-            scale = ms.scale(rootNote, scale)
-                
-            for i in scale:
-                noteColl.append(noteDict[i.midi])
-           
-            tones=[]
-            for i in range(toneCount):
-                tones.append(random.choice(noteColl))
+        noteColl = []
+        scale = ms.scale(rootNote, scale)
+            
+        for i in scale:
+            noteColl.append(noteDict[i.midi])
+        
+        tones=[]
+        for i in range(toneCount):
+            tones.append(random.choice(noteColl))
 
-            self.toneList = tones
+        self.toneList = tones
 
         return
 
     def generateNoteList(self, noteCount, rootNote='D', scale='dorian', static=False):
         if static:
             if len(self.toneList) == 0:
-                self.generateToneList(noteCount, rootNote, scale)
-                self.fillNoteList(self.toneList)
-            else:
-                self.fillNoteList(self.toneList)
-
+                self.generateToneList(noteCount, rootNote, scale)    
+            self.fillNoteList(self.toneList)
         else:
             self.generateToneList(noteCount, rootNote, scale)
             self.fillNoteList(self.toneList)
@@ -249,17 +245,18 @@ class Song:
             bar.generateNoteList(notesPerBar, rootNote, scale, static)
             bar.setNoteListDurations(0.61)
             bars.append(bar)
-
+        
+        """
         #start with sinusoid modulation of alkuaika
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListAlkuaikaWithSinusoid(16.0, 2.0)
+                bars[barNumber].modulateNoteListAlkuaikaWithSinusoid(1.0, 5.3)
 
 
         #then sinusoid modulation of duration
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListDurationWithSinusoid(1, -0.61)
+                bars[barNumber].modulateNoteListDurationWithSinusoid(16, 0.81)
 
         #then sinusoid modulation of dyn
         for barNumber in range(len(bars)):
@@ -278,7 +275,7 @@ class Song:
 
             if barNumber%5==0:
                 bars[barNumber].transposeNoteList(-7)
-
+        """
 
         self.addBars(bars)
 
