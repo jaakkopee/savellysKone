@@ -105,30 +105,41 @@ class Note:
 
 class Bar:
     def __init__(self, duration=8, deltaPlus=0.75):
+        self.toneList = []
         self.noteList = []
         self.duration = duration
         self.deltaPlus = deltaPlus
         return
 
-    def generateNoteList(self, noteCount, rootNote='D', scale='dorian'):
-        noteColl = []
-        scale = ms.scale(rootNote, scale)
-        
-        for i in scale:
-            noteColl.append(noteDict[i.midi])
+    def generateToneList(self, toneCount=6, rootNote='D', scale='dorian'):
+        if len(self.toneList)==0:
+            noteColl = []
+            scale = ms.scale(rootNote, scale)
+                
+            for i in scale:
+                noteColl.append(noteDict[i.midi])
+           
+            tones=[]
+            for i in range(toneCount):
+                tones.append(random.choice(noteColl))
 
-        notes=[]
-        for i in range(noteCount):
-            if len(notes)==0:
-                notes.append(random.choice(noteColl))
-            note1 = notes[-1]
-            note2 = random.choice(noteColl)
-            while abs(note1-note2) > 4:
-                note2 = random.choice(noteColl)
-            notes.append(note2)
-        self.fillNoteList(notes)
-        print(notes)
-    
+            self.toneList = tones
+            return
+
+    def generateNoteList(self, noteCount, rootNote='D', scale='dorian', static=False):
+        if static:
+            if len(self.toneList) == 0:
+                self.generateToneList(noteCount, rootNote, scale)
+                self.fillNoteList(self.toneList)
+            else:
+                self.fillNoteList(self.toneList)
+
+        else:
+            self.generateToneList(noteCount, rootNote, scale)
+            self.fillNoteList(self.toneList)
+
+        return
+        
     def fillNoteList(self, toneList):
         delta = 0
         for t in toneList:
@@ -226,21 +237,22 @@ class Song:
                      rootNote='D',
                      scale='dorian',
                      duration=8,
-                     deltaPlus=1.0):
+                     deltaPlus=1.0,
+                     static=False):
         
         bars = []
         
         #preliminary actions
         for i in range(barCount):
             bar = Bar(duration, deltaPlus)
-            bar.generateNoteList(notesPerBar, rootNote, scale)
+            bar.generateNoteList(notesPerBar, rootNote, scale, static)
             bar.setNoteListDurations(0.61)
             bars.append(bar)
 
         #start with sinusoid modulation of alkuaika
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListAlkuaikaWithSinusoid(2.6, 3.8)
+                bars[barNumber].modulateNoteListAlkuaikaWithSinusoid(16.0, 2.0)
 
 
         #then sinusoid modulation of duration
@@ -303,10 +315,10 @@ class Song:
 
 if __name__ == "__main__":
     song = Song()
-    song.generateBars(8, 5, 'D', 'dorian', 8, 1.0)
+    song.generateBars(8, 5, 'D', 'dorian', 8, 1.0, static=True)
     grammar = [i for i in range(len(song.barList))]
     song.addGrammar(grammar)
     song.scrambleGrammar()
 
-    song.writeMidiFile("skTest03.mid")
+    song.writeMidiFile("skTest10_staticmelody.mid")
 
