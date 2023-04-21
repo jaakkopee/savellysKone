@@ -112,22 +112,6 @@ class Bar:
         self.deltaPlus = deltaPlus
         return
 
-    def generateToneList(self, toneCount=6, rootNote='D', scale='dorian'):
-        noteColl = []
-        scale = ms.scale(rootNote, scale)
-            
-        for i in scale:
-            noteColl.append(noteDict[i.midi])
-        
-        tones=[]
-        for i in range(toneCount):
-            tones.append(random.choice(noteColl))
-
-        global globalToneList
-        globalToneList = tones
-
-        return
-
     def generateNoteList(self, noteCount, rootNote='D', scale='dorian', static=False):
         self.fillNoteList(globalToneList)
         return
@@ -214,6 +198,22 @@ class Song:
         self.talku = 0
         return
     
+    def generateToneList(self, toneCount=6, rootNote='D', scale='dorian'):
+        noteColl = []
+        scale = ms.scale(rootNote, scale)
+            
+        for i in scale:
+            noteColl.append(noteDict[i.midi])
+        
+        tones=[]
+        for i in range(toneCount):
+            tones.append(random.choice(noteColl))
+
+        global globalToneList
+        globalToneList = tones
+
+        return
+
     def addBars(self, bars):
         for bar in bars:
             self.barList.append(bar)
@@ -311,6 +311,7 @@ class Song:
 if __name__ == "__main__":
     song = Song()
     globalToneList = [69, 65, 63, 62, 56, 28]
+    song.generateToneList(6, 'D', 'dorian')
     song.generateBars(8, 5, 'D', 'dorian', 8, 1.0, static=True)
     grammar = [i for i in range(len(song.barList))]
     song.addGrammar(grammar)
