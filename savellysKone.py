@@ -125,9 +125,9 @@ class Bar:
             note2 = random.choice(noteColl)
             while abs(note1-note2) > 4:
                 note2 = random.choice(noteColl)
-            notes.append(note1)
             notes.append(note2)
         self.fillNoteList(notes)
+        print(notes)
     
     def fillNoteList(self, toneList):
         delta = 0
@@ -226,7 +226,7 @@ class Song:
                      rootNote='D',
                      scale='dorian',
                      duration=8,
-                     deltaPlus=0.75):
+                     deltaPlus=1.0):
         
         bars = []
         
@@ -240,7 +240,7 @@ class Song:
         #start with sinusoid modulation of alkuaika
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListAlkuaikaWithSinusoid(1, -0.18)
+                bars[barNumber].modulateNoteListAlkuaikaWithSinusoid(2.6, 3.8)
 
 
         #then sinusoid modulation of duration
@@ -251,7 +251,7 @@ class Song:
         #then sinusoid modulation of dyn
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListDynWithSinusoid(1, 20)
+                bars[barNumber].modulateNoteListDynWithSinusoid(1, 48)
 
         #then reverse
         for barNumber in range(len(bars)):
@@ -303,10 +303,10 @@ class Song:
 
 if __name__ == "__main__":
     song = Song()
-    song.generateBars(32, 6, 'C', 'harmonics', 4, 1.5)
+    song.generateBars(8, 5, 'D', 'dorian', 8, 1.0)
     grammar = [i for i in range(len(song.barList))]
     song.addGrammar(grammar)
     song.scrambleGrammar()
 
-    song.writeMidiFile("skTest02.mid")
+    song.writeMidiFile("skTest03.mid")
 
