@@ -94,6 +94,7 @@ noteDict = {
     'C5': 84
 }
 
+globalToneList = [60, 60, 60, 64, 62, 62, 62, 65]
 
 class Note:
     def __init__(self):
@@ -105,7 +106,7 @@ class Note:
 
 class Bar:
     def __init__(self, duration=8, deltaPlus=0.75):
-        self.toneList = []
+        self.toneList = None
         self.noteList = []
         self.duration = duration
         self.deltaPlus = deltaPlus
@@ -122,20 +123,17 @@ class Bar:
         for i in range(toneCount):
             tones.append(random.choice(noteColl))
 
-        self.toneList = tones
+        global globalToneList
+        globalToneList = tones
 
         return
 
     def generateNoteList(self, noteCount, rootNote='D', scale='dorian', static=False):
-        if static:
-            if len(self.toneList) == 0:
-                self.generateToneList(noteCount, rootNote, scale)
-        else:
-            self.generateToneList(noteCount, rootNote, scale)    
-        self.fillNoteList(self.toneList)
+        self.fillNoteList(globalToneList)
         return
         
     def fillNoteList(self, toneList):
+        self.noteList=[]
         delta = 0
         for t in toneList:
             tn = Note()
@@ -238,6 +236,7 @@ class Song:
         bars = []
         
         #preliminary actions
+        
         for i in range(barCount):
             bar = Bar(duration, deltaPlus)
             bar.generateNoteList(notesPerBar, rootNote, scale, static)
@@ -311,10 +310,11 @@ class Song:
 
 if __name__ == "__main__":
     song = Song()
+    globalToneList = [69, 65, 63, 62, 56, 28]
     song.generateBars(8, 5, 'D', 'dorian', 8, 1.0, static=True)
     grammar = [i for i in range(len(song.barList))]
     song.addGrammar(grammar)
-    song.scrambleGrammar()
+    #song.scrambleGrammar()
 
     song.writeMidiFile("skTest10_staticmelody.mid")
 
