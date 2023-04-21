@@ -124,7 +124,8 @@ class Bar:
                 tones.append(random.choice(noteColl))
 
             self.toneList = tones
-            return
+
+        return
 
     def generateNoteList(self, noteCount, rootNote='D', scale='dorian', static=False):
         if static:
