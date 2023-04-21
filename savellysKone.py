@@ -127,14 +127,9 @@ class Bar:
         return
 
     def generateNoteList(self, noteCount, rootNote='D', scale='dorian', static=False):
-        if static:
-            if len(self.toneList) == 0:
-                self.generateToneList(noteCount, rootNote, scale)    
-            self.fillNoteList(self.toneList)
-        else:
-            self.generateToneList(noteCount, rootNote, scale)
-            self.fillNoteList(self.toneList)
-
+        if len(self.toneList) == 0 or not static:
+            self.generateToneList(noteCount, rootNote, scale)    
+        self.fillNoteList(self.toneList)
         return
         
     def fillNoteList(self, toneList):
