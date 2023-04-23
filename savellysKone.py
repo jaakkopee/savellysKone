@@ -252,18 +252,18 @@ class Song:
         #start with sinusoid modulation of alkuaika
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListAlkuaikaWithSinusoid(14.0, -0.13)
+                bars[barNumber].modulateNoteListAlkuaikaWithSinusoid(32.0, -0.23)
 
 
         #then sinusoid modulation of duration
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListDurationWithSinusoid(32.0, -0.0991)
+                bars[barNumber].modulateNoteListDurationWithSinusoid(16.0, -0.1991)
 
         #then sinusoid modulation of dyn
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListDynWithSinusoid(6.0, 32)
+                bars[barNumber].modulateNoteListDynWithSinusoid(8.0, 32)
 
         #then reverse
         for barNumber in range(len(bars)):
@@ -272,10 +272,10 @@ class Song:
 
         #then transpose
         for barNumber in range(len(bars)):
-            if barNumber%4==0:
+            if barNumber%4==0 or barNumber%7==0:
                 bars[barNumber].transposeNoteList(0)
 
-            if barNumber%5==0:
+            if barNumber%5==0 or barNumber%9==0:
                 bars[barNumber].transposeNoteList(0)
         
 
@@ -315,13 +315,13 @@ class Song:
 
 if __name__ == "__main__":
     song = Song()
-    globalToneList = [36, 36, 38, 38, 36, 36, 38, 38, 36, 36, 36, 38, 38, 36, 36, 38]
-    #song.generateToneList(12, 'A', 'phrygian')
-    song.generateBars(8, 8, 0.75)
+    globalToneList = [36, 36, 38, 38, 36, 36, 38, 38]
+    #song.generateToneList(8, 'E', 'phrygian')
+    song.generateBars(8, 8, 1.0)
     #song.transpose(-36)
     grammar = [i for i in range(len(song.barList))]
     song.addGrammar(grammar)
     #song.scrambleGrammar()
 
-    song.writeMidiFile("skTest15drums.mid")
+    song.writeMidiFile("skTest16_melodia.mid")
 
