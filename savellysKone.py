@@ -246,37 +246,38 @@ class Song:
         for i in range(barCount):
             bar = Bar(duration, deltaPlus)
             bar.generateNoteList()
-            bar.setNoteListDurations(0.61)
+            bar.setNoteListDurations(0.84)
             bars.append(bar)
             
         #start with sinusoid modulation of alkuaika
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListAlkuaikaWithSinusoid(32.0, -0.23)
+                bars[barNumber].modulateNoteListAlkuaikaWithSinusoid(12.0, -0.23)
 
 
         #then sinusoid modulation of duration
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListDurationWithSinusoid(16.0, -0.1991)
+                bars[barNumber].modulateNoteListDurationWithSinusoid(24.0, -0.23)
 
         #then sinusoid modulation of dyn
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListDynWithSinusoid(8.0, 32)
-
+                bars[barNumber].modulateNoteListDynWithSinusoid(3.0, 32)
+        """
         #then reverse
         for barNumber in range(len(bars)):
             if barNumber%11==0:
                 bars[barNumber].reverseNoteList()
+        """
 
         #then transpose
         for barNumber in range(len(bars)):
-            if barNumber%4==0 or barNumber%7==0:
-                bars[barNumber].transposeNoteList(0)
+            if barNumber%6==0:
+                bars[barNumber].transposeNoteList(2)
 
-            if barNumber%5==0 or barNumber%9==0:
-                bars[barNumber].transposeNoteList(0)
+            if barNumber%2==0:
+                bars[barNumber].transposeNoteList(-2)
         
 
         self.addBars(bars)
@@ -315,13 +316,16 @@ class Song:
 
 if __name__ == "__main__":
     song = Song()
-    globalToneList = [36, 36, 38, 38, 36, 36, 38, 38]
-    #song.generateToneList(8, 'E', 'phrygian')
+    globalToneList = [36, 36, 42, 38, 42, 36, 42, 38, 36, 36, 42, 38, 42, 36, 42, 38]
+    #song.generateToneList(12, 'A', 'major')
+    for i in song.barList:
+        i.deltaPlus = 0.25
     song.generateBars(8, 8, 1.0)
     #song.transpose(-36)
     grammar = [i for i in range(len(song.barList))]
     song.addGrammar(grammar)
+    #song.transpose(-24)
     #song.scrambleGrammar()
 
-    song.writeMidiFile("skTest16_melodia.mid")
+    song.writeMidiFile("Vakinoita_rummut01.mid")
 
