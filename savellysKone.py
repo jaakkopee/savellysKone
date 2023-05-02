@@ -236,17 +236,18 @@ class Song:
 
     def generateBars(self,
                      barCount=8,
-                     duration=8,
-                     deltaPlus=1.0):
+                     barDuration=8,
+                     deltaPlus=1.0,
+                     noteDuration=0.1):
         
         bars = []
         
         #preliminary actions
         
         for i in range(barCount):
-            bar = Bar(duration, deltaPlus)
+            bar = Bar(barDuration, deltaPlus)
             bar.generateNoteList()
-            bar.setNoteListDurations(0.84)
+            bar.setNoteListDurations(noteDuration)
             bars.append(bar)
             
         #start with sinusoid modulation of alkuaika
@@ -319,14 +320,14 @@ class Song:
 
 if __name__ == "__main__":
     song = Song()
-    globalToneList = [62, 31, 93, 31]
-    #song.generateToneList(4, 'D', 'dorian')
-    song.generateBars(8, 8, 2.0)
+    #globalToneList = [62, 31, 93, 31]
+    song.generateToneList(10, 'E', 'phrygian')
+    song.generateBars(8, 16, 1.6, 2.0)
     #song.transpose(-36)
     grammar = [i for i in range(len(song.barList))]
     song.addGrammar(grammar)
     #song.transpose(-24)
     #song.scrambleGrammar()
 
-    song.writeMidiFile("U48_klara01.mid", tempo=100)
+    song.writeMidiFile("U48_kakkosTeema_ääni2.mid", tempo=90)
 
