@@ -319,14 +319,14 @@ class Song:
 
 if __name__ == "__main__":
     song = Song()
-    #globalToneList = [42, 42, 42, 42]
-    song.generateToneList(8, 'D', 'dorian')
-    song.generateBars(8, 8, 1.0)
+    globalToneList = [62, 31, 93, 31]
+    #song.generateToneList(4, 'D', 'dorian')
+    song.generateBars(8, 8, 2.0)
     #song.transpose(-36)
     grammar = [i for i in range(len(song.barList))]
     song.addGrammar(grammar)
     #song.transpose(-24)
     #song.scrambleGrammar()
 
-    song.writeMidiFile("U48_jouset01.mid", tempo=100)
+    song.writeMidiFile("U48_klara01.mid", tempo=100)
 
