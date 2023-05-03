@@ -253,7 +253,7 @@ class Song:
         #start with sinusoid modulation of onset
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListOnsetsWithSinusoid(8.0, -0.23)
+                bars[barNumber].modulateNoteListOnsetsWithSinusoid(8.0, -0.03)
 
 
         #then sinusoid modulation of duration
@@ -272,7 +272,7 @@ class Song:
                 bars[barNumber].reverseNoteList()
         """
 
-
+        """
         #then transpose
         for barNumber in range(len(bars)):
             if barNumber%8==0:
@@ -280,7 +280,7 @@ class Song:
 
             if barNumber%2==0:
                 bars[barNumber].transposeNoteList(-5)
-
+        """
 
         self.addBars(bars)
 
@@ -321,13 +321,13 @@ class Song:
 if __name__ == "__main__":
     song = Song()
     #globalToneList = [62, 31, 93, 31]
-    song.generateToneList(10, 'E', 'phrygian')
-    song.generateBars(8, 16, 1.6, 2.0)
+    song.generateToneList(10, 'C', 'locrian')
+    song.generateBars(8, 8, 0.25, 0.125)
     #song.transpose(-36)
     grammar = [i for i in range(len(song.barList))]
     song.addGrammar(grammar)
     #song.transpose(-24)
     #song.scrambleGrammar()
 
-    song.writeMidiFile("testing123.mid", tempo=90)
+    song.writeMidiFile("locrianArp.mid", tempo=144)
 
