@@ -238,7 +238,16 @@ class Song:
                      barCount=8,
                      barDuration=8,
                      interOnsetInterval=1.0,
-                     noteDuration=0.1):
+                     noteDuration=0.1,
+                     sinModOfOnset=False,
+                     onsetModFreq=2.5,
+                     onsetModAmp=0.056,
+                     sinModOfDuration=False,
+                     durationModFreq=2.5,
+                     durationModAmp=-0.23,
+                     sinModOfVelocity=False,
+                     velocityModFreq=0.666,
+                     velocityModAmp=32):
         
         bars = []
         
@@ -251,20 +260,24 @@ class Song:
             bars.append(bar)
             
         #start with sinusoid modulation of onset
-        for barNumber in range(len(bars)):
-            if barNumber%1==0:
-                bars[barNumber].modulateNoteListOnsetsWithSinusoid(2.0, -0.23)
+        if sinModOfOnset:
+            for barNumber in range(len(bars)):
+                if barNumber%1==0:
+                    bars[barNumber].modulateNoteListOnsetsWithSinusoid(onsetModFreq, onsetModAmp)
 
 
         #then sinusoid modulation of duration
-        for barNumber in range(len(bars)):
-            if barNumber%1==0:
-                bars[barNumber].modulateNoteListDurationsWithSinusoid(16.0, -0.23)
+        if sinModOfDuration:
+            for barNumber in range(len(bars)):
+                if barNumber%1==0:
+                    bars[barNumber].modulateNoteListDurationsWithSinusoid(durationModFreq, durationModAmp)
 
         #then sinusoid modulation of velocity
-        for barNumber in range(len(bars)):
-            if barNumber%1==0:
-                bars[barNumber].modulateNoteListVelocitiesWithSinusoid(1.0, 48)
+        if sinModOfVelocity:
+            for barNumber in range(len(bars)):
+                if barNumber%1==0:
+                    bars[barNumber].modulateNoteListVelocitiesWithSinusoid(velocityModFreq, velocityModAmp)
+
         """
         #then reverse
         for barNumber in range(len(bars)):
@@ -320,14 +333,14 @@ class Song:
 
 if __name__ == "__main__":
     song = Song()
-    #globalToneList = [62, 31, 93, 31]
-    song.generateToneList(10, 'A', 'aeolian')
-    song.generateBars(8, 8, 1.5, 1.0)
+    globalToneList = [62, 93, 31, 62]
+    #song.generateToneList(10, 'A', 'aeolian')
+    song.generateBars(8, 8, 1.0, 0.6)
     #song.transpose(-36)
     grammar = [i for i in range(len(song.barList))]
     song.addGrammar(grammar)
     #song.transpose(-24)
     #song.scrambleGrammar()
 
-    song.writeMidiFile("U48sounds_teema01_aani01.mid", tempo=110)
+    song.writeMidiFile("Rumputesti01.mid", tempo=128)
 
