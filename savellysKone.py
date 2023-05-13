@@ -253,7 +253,7 @@ class Song:
         #start with sinusoid modulation of onset
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListOnsetsWithSinusoid(8.0, -0.03)
+                bars[barNumber].modulateNoteListOnsetsWithSinusoid(2.0, -0.23)
 
 
         #then sinusoid modulation of duration
@@ -264,7 +264,7 @@ class Song:
         #then sinusoid modulation of velocity
         for barNumber in range(len(bars)):
             if barNumber%1==0:
-                bars[barNumber].modulateNoteListVelocitiesWithSinusoid(3.0, 32)
+                bars[barNumber].modulateNoteListVelocitiesWithSinusoid(1.0, 48)
         """
         #then reverse
         for barNumber in range(len(bars)):
@@ -321,13 +321,13 @@ class Song:
 if __name__ == "__main__":
     song = Song()
     #globalToneList = [62, 31, 93, 31]
-    song.generateToneList(10, 'C', 'locrian')
-    song.generateBars(8, 8, 0.25, 0.125)
+    song.generateToneList(10, 'A', 'aeolian')
+    song.generateBars(8, 8, 1.5, 1.0)
     #song.transpose(-36)
     grammar = [i for i in range(len(song.barList))]
     song.addGrammar(grammar)
     #song.transpose(-24)
     #song.scrambleGrammar()
 
-    song.writeMidiFile("locrianArp.mid", tempo=144)
+    song.writeMidiFile("U48sounds_teema01_aani01.mid", tempo=110)
 
