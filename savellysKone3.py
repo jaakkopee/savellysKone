@@ -61,14 +61,14 @@ def generate(grammar, symbol, depth):
         return generate(grammar, generate_from_string(grammar, symbol), depth - 1)
 
 pitch_grammar_str = """
-S -> A B C D E F G
-A -> 60 | 62 | 64 | 65 | 67 | 69 | 71
-B -> 63 | 66 | 68 | 70
-C -> 61 | 63 | 66 | 68 | 70 | 72
-D -> 60 | 62 | 64 | 65 | 67 | 69 | 71
-E -> 63 | 66 | 68 | 70
-F -> 61 | 63 | 66 | 68 | 70 | 72
-G -> 60 | 62 | 64 | 65 | 67 | 69 | 71
+S -> A
+A -> B C 60 | D E 60 | F G 60
+B -> 60 | 62 | 64 | 65
+C -> 60 | 62 | 64 | 65 F | 65 G
+D -> 60 | 62 | 64 | 65
+E -> 60 | 62 | 64 | 65 F | 65 G
+F -> 60 | 62 | 64 | 65
+G -> 60 | 62 | 64 | 65
 """
 pitch_grammar = parse_grammar(pitch_grammar_str.split("\n"))
 print(pitch_grammar)
@@ -77,14 +77,14 @@ pitch_list = pitch_list.split()
 pitch_list = [int(note) for note in pitch_list]
 
 duration_grammar_str = """
-S -> A B C D E F G
-A -> 1 | 0.5 | 0.25
-B -> 0.5 | 0.25 | 0.125
-C -> 0.25 | 0.125 | 0.0625
-D -> 1 | 0.5 | 0.25
-E -> 0.5 | 0.25 | 0.125
-F -> 0.25 | 0.125 | 0.0625
-G -> 1 | 0.5 | 0.25
+S -> A
+A -> B C 1 | D E 1 | F G 1
+B -> 0.5 | 0.25 | 0.125 | 0.0625
+C -> 0.5 | 0.25 | 0.125 | 0.0625 F | 0.0625 G
+D -> 0.5 | 0.25 | 0.125 | 0.0625
+E -> 0.5 | 0.25 | 0.125 | 0.0625 F | 0.0625 G
+F -> 0.5 | 0.25 | 0.125 | 0.0625
+G -> 0.5 | 0.25 | 0.125 | 0.0625
 """
 duration_grammar = parse_grammar(duration_grammar_str.split("\n"))
 print(duration_grammar)
@@ -93,14 +93,14 @@ duration_list = duration_list.split()
 duration_list = [float(note) for note in duration_list]
 
 velocity_grammar_str = """
-S -> A B C D E F G
-A -> 100 | 80 | 60 | 40
-B -> 80 | 60 | 40 | 20
-C -> 60 | 40 | 20 | 10
-D -> 100 | 80 | 60 | 40
-E -> 80 | 60 | 40 | 20
-F -> 60 | 40 | 20 | 10
-G -> 100 | 80 | 60 | 40
+S -> A
+A -> B C 100 | D E 100 | F G 100
+B -> 100 | 110 | 120 | 127
+C -> 100 | 110 | 120 | 127 F | 127 G
+D -> 100 | 110 | 120 | 127
+E -> 100 | 110 | 120 | 127 F | 127 G
+F -> 100 | 110 | 120 | 127
+G -> 100 | 110 | 120 | 127
 """
 velocity_grammar = parse_grammar(velocity_grammar_str.split("\n"))
 print(velocity_grammar)
@@ -267,34 +267,45 @@ class Song:
     
     def modulate_pitch_with_sin(self, freq, amp):
         for bar in self.bar_list:
+            bar_onset = bar.bar_onset
             for note in bar.note_list:
-                note.pitch += int(math.sin(note.onset*freq)*amp)
-        return
+                note.pitch += int(math.sin((note.onset+bar_onset)*freq)*amp)
+                if note.pitch < 0:
+                    note.pitch = 0
+                if note.pitch > 127:
+                    note.pitch = 127
     
     def modulate_duration_with_sin(self, freq, amp):
         for bar in self.bar_list:
+            bar_onset = bar.bar_onset
             for note in bar.note_list:
-                note.duration += math.sin(note.onset*freq)*amp
+                note.duration += math.sin((note.onset+bar_onset)*freq)*amp
+                if note.duration < 0:
+                    note.duration = 0
         return
     
     def modulate_velocity_with_sin(self, freq, amp):
         for bar in self.bar_list:
+            bar_onset = bar.bar_onset
             for note in bar.note_list:
-                note.velocity += int(math.sin(note.onset*freq)*amp)
-                if note.velocity > 127:
-                    note.velocity = 127
+                note.velocity += int(math.sin((note.onset+bar_onset)*freq)*amp)
                 if note.velocity < 0:
                     note.velocity = 0
-        return
-    
+                if note.velocity > 127:
+                    note.velocity = 127
+
     def modulate_onset_with_sin(self, freq, amp):
         for bar in self.bar_list:
+            bar_onset = bar.bar_onset
             for note in bar.note_list:
-                note.onset += math.sin(note.onset*freq)*amp
+                note.onset += math.sin((note.onset+bar_onset)*freq)*amp
+                if note.onset < 0:
+                    note.onset = 0
         return
     
-song = Song()
+song = Song(8)
 song.make_bar_list()
+#song.modulate_onset_with_sin(2, 0.5)
 song.make_midi_file("test_grammars.mid")
 print("Done")
 
