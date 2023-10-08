@@ -97,7 +97,7 @@ def create_global_tonelist():
     with open("in_grammar.txt") as in_grammar_file:
         grammar = ggp.parse_grammar(in_grammar_file)
     in_grammar_file.close()
-    globalToneList = ggp.generate(grammar, "S", 128)
+    globalToneList = ggp.generate(grammar, "S", 256)
     globalToneList = globalToneList.split()
     globalToneList = [int(note) for note in globalToneList]
     return globalToneList
@@ -113,12 +113,13 @@ class Note:
         return
 
 class Bar:
-    def __init__(self, duration=8, interOnsetInterval=0.75, onset=0):
+    def __init__(self, duration=8, interOnsetInterval = 1.0, onset=0):
         self.toneList = None
         self.noteList = []
         self.duration = duration
         self.interOnsetInterval = interOnsetInterval
         self.bar_onset = onset
+        self.endTime = self.bar_onset + self.duration*self.interOnsetInterval
         return
 
     def generateNoteList(self):
@@ -261,11 +262,6 @@ class Song:
         for barNumber in range(len(self.barList)):
             self.barList[barNumber].setNoteListDurations(duration)
         return
-
-    def setBarListInterOnsetInterval(self, interOnsetInterval):
-        for barNumber in range(len(self.barList)):
-            self.barList[barNumber].interOnsetInterval = interOnsetInterval
-        return
     
     def write_midi(self):
         #create your MIDI object
@@ -282,8 +278,7 @@ class Song:
 if __name__ == "__main__":
     s = Song(16)
     s.generateBarList()
-    s.setBarListInterOnsetInterval(1.0)
     s.modulateBarListDurationsWithSinusoid(1, 3.0)
-    s.modulateBarListOnsetsWithSinusoid(10, 2.8)
+    s.modulateBarListOnsetsWithSinusoid(1, 2.0)
     s.modulateBarListVelocitiesWithSinusoid(2, 2.0)
     s.write_midi()
