@@ -1,0 +1,12 @@
+S -> prinsessa A jotta B 
+A -> kärsii C|laulaa C|rakastaa C
+C -> hurjasti|vienosti|ihanasti
+B -> prinssi D
+D -> rakastuisi ja prinsessa saisi E
+E -> munaa|prinssin|prinssin munaa F
+F -> jotta G
+G -> perillinen saataisiin H
+H -> alulle|alulle ja valtakunnalle uusi perintöprinssi joka A jotta I
+I -> prinssi J|jumala J|kuningas J|kansa J
+J -> saisi K
+K -> tulta munilleen|paskaa hattuun|lisää veroja|lisää makkaraa ja K
