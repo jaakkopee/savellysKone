@@ -1,0 +1,2 @@
+MIDIUtil==1.2.1
+musical-scales==1.0.1
