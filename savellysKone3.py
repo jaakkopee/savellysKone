@@ -61,52 +61,72 @@ def generate(grammar, symbol, depth):
         return generate(grammar, generate_from_string(grammar, symbol), depth - 1)
 
 pitch_grammar_str = """
-S -> A
-A -> B C 60 | D E 60 | F G 60
-B -> 60 | 62 | 64 | 67
-C -> 60 | 62 | 64 | 67 F | 67 G
-D -> 60 | 62 | 64 | 67
-E -> 60 | 62 | 64 | 67 F | 67 G
-F -> 60 | 62 | 64 | 67
-G -> 60 | 62 | 64 | 67
+S -> A B C D E F G H
+A -> 60 A | 62 A | 64 | 65
+B -> 68 B | 67 B | 66 | 70
+C -> 72 C | 71 C | 70 | 74
+D -> 76 D | 75 D | 74 | 78
+E -> 80 E | 79 E | 78 | 82
+F -> 84 F | 83 F | 82 | 86
+G -> 88 G | 87 G | 86 | 90
+H -> 92 H | 91 H | 90 | 94
 """
 pitch_grammar = parse_grammar(pitch_grammar_str.split("\n"))
 print(pitch_grammar)
-pitch_list = generate(pitch_grammar, "S", 64)
-pitch_list = pitch_list.split()
-pitch_list = [int(note) for note in pitch_list]
+pitch_list = []
+print("generating pitch list")
+while len(pitch_list) < 8:
+    pitch_list = generate(pitch_grammar, "S", 64)
+    pitch_list = pitch_list.split()
+    pitch_list = [int(note) for note in pitch_list]
+
+print("...done")
+
 
 duration_grammar_str = """
-S -> A
-A -> B C 0.5 | D E 0.5 | F G 0.5
-B -> 0.5 | 0.25 | 1.0 | 1.5
-C -> 0.5 | 0.25 | 1.0 | 1.5 F | 1.5 G
-D -> 0.5 | 0.25 | 1.0 | 1.5
-E -> 0.5 | 0.25 | 1.0 | 1.5 F | 1.5 G
-F -> 0.5 | 0.25 | 1.0 | 1.5
-G -> 0.5 | 0.25 | 1.0 | 1.5
+S -> A B C D E F G H
+A -> 1 A | 0.5 A | 0.25 | 0.125
+B -> 1 B | 0.5 B | 0.25 | 0.125
+C -> 1 C | 0.5 C | 0.25 | 0.125
+D -> 1 D | 0.5 D | 0.25 | 0.125
+E -> 1 E | 0.5 E | 0.25 | 0.125
+F -> 1 F | 0.5 F | 0.25 | 0.125
+G -> 1 G | 0.5 G | 0.25 | 0.125
+H -> 1 H | 0.5 H | 0.25 | 0.125
 """
 duration_grammar = parse_grammar(duration_grammar_str.split("\n"))
 print(duration_grammar)
-duration_list = generate(duration_grammar, "S", 64)
-duration_list = duration_list.split()
-duration_list = [float(note) for note in duration_list]
+print("generating duration list")
+duration_list = []
+while len(duration_list) < 8:
+    duration_list = generate(duration_grammar, "S", 64)
+    duration_list = duration_list.split()
+    duration_list = [float(note) for note in duration_list]
+
+print("...done")
 
 velocity_grammar_str = """
-S -> A
-A -> B C 100 | D E 100 | F G 100
-B -> 100 | 80 | 120 | 60
-C -> 100 | 80 | 120 | 60 F | 60 G
-D -> 100 | 80 | 120 | 60
-E -> 100 | 80 | 120 | 60 F | 60 G
-F -> 100 | 80 | 120 | 60
-G -> 100 | 80 | 120 | 60
+S -> A B C D E F G H
+A -> 100 A | 90 A | 80 | 70
+B -> 100 B | 90 B | 80 | 70
+C -> 100 C | 90 C | 80 | 70
+D -> 100 D | 90 D | 80 | 70
+E -> 100 E | 90 E | 80 | 70
+F -> 100 F | 90 F | 80 | 70
+G -> 100 G | 90 G | 80 | 70
+H -> 100 H | 90 H | 80 | 70
 """
 velocity_grammar = parse_grammar(velocity_grammar_str.split("\n"))
 print(velocity_grammar)
-velocity_list = generate(velocity_grammar, "S", 64)
-velocity_list = velocity_list.split()
-velocity_list = [int(note) for note in velocity_list]
+velocity_list = []
+print("generating velocity list")
+while len(velocity_list) < 8:
+    velocity_list = generate(velocity_grammar, "S", 64)
+    velocity_list = velocity_list.split()
+    velocity_list = [int(note) for note in velocity_list]
+
+print("...done")
+
 
 #find the shortest list
 shortest_list = len(pitch_list)
@@ -305,6 +325,8 @@ class Song:
     
 song = Song(8)
 song.make_bar_list()
+song.set_bar_list_durations(0.5)
+song.modulate_onset_with_sin(2, 0.6)
 song.make_midi_file("test_grammars.mid")
 print("Done")
 
