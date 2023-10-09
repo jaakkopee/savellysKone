@@ -61,14 +61,22 @@ def generate(grammar, symbol, depth):
 
 pitch_grammar_str = """
 S -> A B C D E F G H
-A -> 60 A | 62 A | 64 | 65
-B -> 68 B | 67 B | 66 | 70
-C -> 72 C | 71 C | 70 | 74
-D -> 76 D | 75 D | 74 | 78
-E -> 80 E | 79 E | 78 | 82
-F -> 84 F | 83 F | 82 | 86
-G -> 88 G | 87 G | 86 | 90
-H -> 92 H | 91 H | 90 | 94
+A -> a 60
+B -> b 62
+C -> c 64
+D -> d 65
+E -> e 67
+F -> f 69
+G -> g 71
+H -> h 72
+h -> 72
+g -> 71
+f -> 69
+e -> 67
+d -> 65
+c -> 64
+b -> 62
+a -> 60
 """
 pitch_grammar = parse_grammar(pitch_grammar_str.split("\n"))
 print(pitch_grammar)
