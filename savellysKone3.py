@@ -63,12 +63,12 @@ def generate(grammar, symbol, depth):
 pitch_grammar_str = """
 S -> A
 A -> B C 60 | D E 60 | F G 60
-B -> 60 | 62 | 64 | 65
-C -> 60 | 62 | 64 | 65 F | 65 G
+B -> 74 | 76 | 78 | 80
+C -> 64 | 68 | 72 | 76 F | 80 G
 D -> 60 | 62 | 64 | 65
 E -> 60 | 62 | 64 | 65 F | 65 G
-F -> 60 | 62 | 64 | 65
-G -> 60 | 62 | 64 | 65
+F -> 52 | 48 | 45 | 42
+G -> 49 | 45 | 42 | 40
 """
 pitch_grammar = parse_grammar(pitch_grammar_str.split("\n"))
 print(pitch_grammar)
@@ -305,7 +305,6 @@ class Song:
     
 song = Song(8)
 song.make_bar_list()
-#song.modulate_onset_with_sin(2, 0.5)
 song.make_midi_file("test_grammars.mid")
 print("Done")
 
