@@ -63,12 +63,12 @@ def generate(grammar, symbol, depth):
 pitch_grammar_str = """
 S -> A
 A -> B C 60 | D E 60 | F G 60
-B -> 74 | 76 | 78 | 80
-C -> 64 | 68 | 72 | 76 F | 80 G
-D -> 60 | 62 | 64 | 65
-E -> 60 | 62 | 64 | 65 F | 65 G
-F -> 52 | 48 | 45 | 42
-G -> 49 | 45 | 42 | 40
+B -> 60 | 62 | 64 | 67
+C -> 60 | 62 | 64 | 67 F | 67 G
+D -> 60 | 62 | 64 | 67
+E -> 60 | 62 | 64 | 67 F | 67 G
+F -> 60 | 62 | 64 | 67
+G -> 60 | 62 | 64 | 67
 """
 pitch_grammar = parse_grammar(pitch_grammar_str.split("\n"))
 print(pitch_grammar)
@@ -78,13 +78,13 @@ pitch_list = [int(note) for note in pitch_list]
 
 duration_grammar_str = """
 S -> A
-A -> B C 1 | D E 1 | F G 1
-B -> 0.5 | 0.25 | 0.125 | 0.0625
-C -> 0.5 | 0.25 | 0.125 | 0.0625 F | 0.0625 G
-D -> 0.5 | 0.25 | 0.125 | 0.0625
-E -> 0.5 | 0.25 | 0.125 | 0.0625 F | 0.0625 G
-F -> 0.5 | 0.25 | 0.125 | 0.0625
-G -> 0.5 | 0.25 | 0.125 | 0.0625
+A -> B C 0.5 | D E 0.5 | F G 0.5
+B -> 0.5 | 0.25 | 1.0 | 1.5
+C -> 0.5 | 0.25 | 1.0 | 1.5 F | 1.5 G
+D -> 0.5 | 0.25 | 1.0 | 1.5
+E -> 0.5 | 0.25 | 1.0 | 1.5 F | 1.5 G
+F -> 0.5 | 0.25 | 1.0 | 1.5
+G -> 0.5 | 0.25 | 1.0 | 1.5
 """
 duration_grammar = parse_grammar(duration_grammar_str.split("\n"))
 print(duration_grammar)
@@ -95,12 +95,12 @@ duration_list = [float(note) for note in duration_list]
 velocity_grammar_str = """
 S -> A
 A -> B C 100 | D E 100 | F G 100
-B -> 100 | 110 | 120 | 127
-C -> 100 | 110 | 120 | 127 F | 127 G
-D -> 100 | 110 | 120 | 127
-E -> 100 | 110 | 120 | 127 F | 127 G
-F -> 100 | 110 | 120 | 127
-G -> 100 | 110 | 120 | 127
+B -> 100 | 80 | 120 | 60
+C -> 100 | 80 | 120 | 60 F | 60 G
+D -> 100 | 80 | 120 | 60
+E -> 100 | 80 | 120 | 60 F | 60 G
+F -> 100 | 80 | 120 | 60
+G -> 100 | 80 | 120 | 60
 """
 velocity_grammar = parse_grammar(velocity_grammar_str.split("\n"))
 print(velocity_grammar)
