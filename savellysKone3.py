@@ -322,9 +322,8 @@ class Song:
                     note.onset = 0
         return
     
-song = Song(8)
+song = Song(16)
 song.make_bar_list()
-song.set_bar_list_durations(0.5)
 song.modulate_onset_with_sin(2, 0.6)
 song.make_midi_file("test_grammars.mid")
 print("Done")
