@@ -1,6 +1,5 @@
 #this program uses grammars to generate midi files
 from midiutil import MIDIFile
-import gengramparser as ggp
 import random
 import math
 import musical_scales as ms
