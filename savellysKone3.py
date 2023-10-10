@@ -390,4 +390,53 @@ if __name__=="__main__":
     
     song.make_midi_file("testPow2LimitBassLine.mid")
 
+    #a simple melody
+    pitch_grammar_str = """
+    S -> A A A A
+    A -> 60 A | 60 B | 60
+    B -> 62 B | 62 C
+    C -> 64 C | 64 D
+    D -> 65 D | 65 E
+    E -> 67 E | 67 F
+    F -> 69 F | 69 G
+    G -> 71 G | 71
+    """
+
+    duration_grammar_str = """
+    S -> A A A A
+    A -> 0.1 A | 0.11 B | 0.111
+    B -> 0.25 B | 0.25
+    """ 
+
+    velocity_grammar_str = """
+    S -> A B C D
+    A -> 100 A | 90 A | 80 | 70
+    B -> 100 B | 90 B | 80 | 70
+    C -> 100 C | 90 C | 80 | 70
+    D -> 100 D | 90 D | 80 | 70
+    """
+
+    #generators
+    pitch_generator = ListGenerator(pitch_grammar_str, 8, "pitch")
+    duration_generator = ListGenerator(duration_grammar_str, 8, "duration")
+    velocity_generator = ListGenerator(velocity_grammar_str, 8, "velocity")
+
+    #make the song
+    song = Song(num_bars=16, ioi=1.0, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=False)
+    song.make_bar_list()
+    song.set_bar_list_durations(0.3)
+
+    #custom transpose algorithm
+    pitch = 0
+    sign = 1
+    for bar in song.bar_list:
+        bar.transpose_note_list(pitch*sign)
+        sign *= -1
+        pitch += 1
+        pitch %= 4
+
+
+    song.make_midi_file("testPow2LimitMelody.mid")
+
+
     
