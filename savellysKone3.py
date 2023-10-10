@@ -295,7 +295,7 @@ class Song:
         return
     
 if __name__=="__main__":
-    
+    #a simple bass line
     pitch_grammar_str = """
     S -> A A A A A A A A
     A -> 60 A | 60 B | 60
@@ -321,11 +321,16 @@ if __name__=="__main__":
     H -> 100 H | 90 H | 80 | 70
     """
 
+    #generators
     pitch_generator = ListGenerator(pitch_grammar_str, 8, "pitch")
+    #generators can be None, in which case a default list is used
+    #Note lists produced by default are all 60, 1.0, 100
+    #these values can be changed via the Song class
     duration_generator = None #ListGenerator(duration_grammar_str, 8, "duration")
     velocity_generator = None #ListGenerator(velocity_grammar_str, 8, "velocity")
     song = Song(num_bars=16, ioi=0.4, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=False)
     song.make_bar_list()
+    #all the methods below can be used to modify the song plus some untested ones.
     song.set_bar_list_durations(0.2)
     song.modulate_duration_with_sin(1, 0.1)
     song.modulate_onset_with_sin(1, 0.1) #add groove
