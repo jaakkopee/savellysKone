@@ -298,28 +298,18 @@ class Song:
         return
     
 if __name__=="__main__":
+    
     pitch_grammar_str = """
-    S -> A 
-    A -> 60 A | 60 | 62 A | 62 | 60 B | 62 B
-    B -> 64 B | 64 | 65 B | 65 | 64 C | 65 C
-    C -> 67 C | 67 | 69 C | 69 | 67 D | 69 D
-    D -> 72 D | 72 | 71 D | 71 | 69 E | 71 E
-    E -> 67 E | 67 | 69 E | 69 | 67 F | 69 F
-    F -> 65 F | 65 | 64 F | 64 | 62 G | 64 G
-    G -> 60 G | 60 | 62 G | 62 | 60 H | 62 H
-    H -> 60 H | 60 | 62 H | 62 | 60 A | 62 A
+    S -> A A A A A A A A
+    A -> 60 A | 60 B | 60
+    B -> 62 B | 62
+
     """
 
     duration_grammar_str = """
-    S -> A B C D E F G H
-    A -> 1 A | 0.5 A | 0.25 | 0.125
-    B -> 1 B | 0.5 B | 0.25 | 0.125
-    C -> 1 C | 0.5 C | 0.25 | 0.125
-    D -> 1 D | 0.5 D | 0.25 | 0.125
-    E -> 1 E | 0.5 E | 0.25 | 0.125
-    F -> 1 F | 0.5 F | 0.25 | 0.125
-    G -> 1 G | 0.5 G | 0.25 | 0.125
-    H -> 1 H | 0.5 H | 0.25 | 0.125
+    S -> A A A A A A A A
+    A -> 0.06 A | 0.06 B | 0.06
+    B -> 0.03
     """
 
     velocity_grammar_str = """
@@ -337,15 +327,7 @@ if __name__=="__main__":
     pitch_generator = ListGenerator(pitch_grammar_str, 8, "pitch")
     duration_generator = ListGenerator(duration_grammar_str, 8, "duration")
     velocity_generator = ListGenerator(velocity_grammar_str, 8, "velocity")
-    song = Song(16, 1.0, pitch_generator, duration_generator, velocity_generator, False)
+    song = Song(16, 0.4, pitch_generator, duration_generator, velocity_generator, False)
     song.make_bar_list()
     song.modulate_onset_with_sin(1, 0.1) #add groove
-    pitch_shift = 0
-    sign = 1
-    for bar in song.bar_list:
-        pitch_shift += 1
-        pitch_shift %= 4
-        sign *= -1
-        bar.transpose_note_list(pitch_shift*sign) #transpose each bar
-
-    song.make_midi_file("testListGen.mid")
+    song.make_midi_file("testGrammarsBassLine.mid")
