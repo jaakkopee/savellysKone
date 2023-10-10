@@ -369,13 +369,13 @@ if __name__=="__main__":
     velocity_generator = None #ListGenerator(velocity_grammar_str, 8, "velocity")
 
     #make the song
-    song = Song(num_bars=16, ioi=0.4, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=False)
+    song = Song(num_bars=16, ioi=0.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=False)
     song.make_bar_list() #this is the method that actually generates the song
     #all the methods below can be used to modify the song plus some untested ones.
     song.set_bar_list_durations(0.2)
     song.modulate_duration_with_sin(1, 0.1)
-    song.modulate_onset_with_sin(1, 0.1) #add sway
-    song.modulate_onset_with_sin(1.5, 0.1) #add sway another way
+    song.modulate_onset_with_sin(1, 0.06) #add sway
+    song.modulate_onset_with_sin(1.5, 0.06) #add sway another way
     song.modulate_onset_with_sin_phase_by_bar(2, 0.3) #add groove with phase reset by bar onset
     song.modulate_velocity_with_sin(1, 10)
     #custom transpose algorithm
