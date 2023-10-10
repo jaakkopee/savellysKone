@@ -374,8 +374,8 @@ if __name__=="__main__":
     #all the methods below can be used to modify the song plus some untested ones.
     song.set_bar_list_durations(0.2)
     song.modulate_duration_with_sin(1, 0.1)
-    song.modulate_onset_with_sin(1, 0.1) #add groove
-    song.modulate_onset_with_sin(1.5, 0.1) #add more groove
+    song.modulate_onset_with_sin(1, 0.1) #add sway
+    song.modulate_onset_with_sin(1.5, 0.1) #add sway another way
     song.modulate_onset_with_sin_phase_by_bar(2, 0.3) #add groove with phase reset by bar onset
     song.modulate_velocity_with_sin(1, 10)
     #custom transpose algorithm
@@ -386,4 +386,6 @@ if __name__=="__main__":
         pitch += 1
         pitch %= 4
         sign *= -1
+
+    #ok. render the song.
     song.make_midi_file("testGrammarsBassLine.mid")
