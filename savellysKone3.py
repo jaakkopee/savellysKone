@@ -437,8 +437,8 @@ if __name__=="__main__":
     pitch_grammar_str = """
     S -> A A A A
     A -> 60 A | 60 B | 60
-    B -> 62 B | 64 B | 62 C | 64 C
-    C -> 62 | 64 | 66 | 68 
+    B -> 64 B | 64 B | 68 C | 68 C
+    C -> 72 | 76 | 80
     """
 
     duration_grammar_str = """
@@ -464,7 +464,7 @@ if __name__=="__main__":
     song.modulate_duration_with_sin(1, 0.1)
     #song.modulate_onset_with_sin(1, 0.06) #add sway
     #song.modulate_onset_with_sin(1.5, 0.06) #add sway another way
-    song.modulate_onset_with_sin_phase_by_bar(0.5, 0.6) #add groove with phase reset by bar onset
+    song.modulate_onset_with_sin_phase_by_bar(1.5, 0.6) #add groove with phase reset by bar onset
     song.modulate_velocity_with_sin(1, 10)
 
     #and render the song.
