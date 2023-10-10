@@ -161,9 +161,9 @@ class Bar:
     
     
 class Song:
-    def __init__(self, num_bars=4, pitch_generator=None, duration_generator=None, velocity_generator=None, generate_every_bar=False):
+    def __init__(self, num_bars=4, ioi=1.0, pitch_generator=None, duration_generator=None, velocity_generator=None, generate_every_bar=False):
         self.bar_list = []
-        self.ioi = 1.0
+        self.ioi = ioi
         self.num_bars = num_bars
         self.pitch_generator = pitch_generator
         self.duration_generator = duration_generator
@@ -336,6 +336,6 @@ if __name__=="__main__":
     pitch_generator = ListGenerator(pitch_grammar_str, 8, "pitch")
     duration_generator = ListGenerator(duration_grammar_str, 8, "duration")
     velocity_generator = ListGenerator(velocity_grammar_str, 8, "velocity")
-    song = Song(16, pitch_generator, duration_generator, velocity_generator, True)
+    song = Song(16, 1.0, pitch_generator, duration_generator, velocity_generator, True)
     song.make_bar_list()
     song.make_midi_file("testListGen.mid")
