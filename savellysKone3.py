@@ -416,8 +416,8 @@ if __name__=="__main__":
 
     #generators
     pitch_generator = ListGenerator(pitch_grammar_str, 8, "pitch")
-    duration_generator = ListGenerator(duration_grammar_str, 8, "duration")
-    velocity_generator = ListGenerator(velocity_grammar_str, 8, "velocity")
+    duration_generator = None #ListGenerator(duration_grammar_str, 8, "duration")
+    velocity_generator = None #ListGenerator(velocity_grammar_str, 8, "velocity")
 
     #make the song
     song = Song(num_bars=16, ioi=0.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=False)
@@ -432,4 +432,43 @@ if __name__=="__main__":
 
     #and render the song.
     song.make_midi_file("testGrammarsDrumBeat.mid")
+
+    #now a melody
+    pitch_grammar_str = """
+    S -> A A A A
+    A -> 60 A | 60 B | 60
+    B -> 62 B | 64 B | 62 C | 64 C
+    C -> 62 | 64 | 66 | 68 
+    """
+
+    duration_grammar_str = """
+    S -> A A A A
+    A -> 0.06 A | 0.06 B | 0.06
+    B -> 0.03
+    """
+
+    velocity_grammar_str = """
+    S -> A A A A
+    A -> 100 A | 90 A | 80 | 70
+    """
+
+    #generators
+    pitch_generator = ListGenerator(pitch_grammar_str, 8, "pitch")
+    duration_generator = None #ListGenerator(duration_grammar_str, 8, "duration")
+    velocity_generator = None #ListGenerator(velocity_grammar_str, 8, "velocity")
+
+    #make the song
+    song = Song(num_bars=16, ioi=2, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
+    song.make_bar_list()
+    song.set_bar_list_durations(1.5)
+    song.modulate_duration_with_sin(1, 0.1)
+    #song.modulate_onset_with_sin(1, 0.06) #add sway
+    #song.modulate_onset_with_sin(1.5, 0.06) #add sway another way
+    song.modulate_onset_with_sin_phase_by_bar(0.5, 0.6) #add groove with phase reset by bar onset
+    song.modulate_velocity_with_sin(1, 10)
+
+    #and render the song.
+    song.make_midi_file("testGrammarsMelody.mid")
+
+
     
