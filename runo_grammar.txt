@@ -1,0 +1,18 @@
+S -> 0 1 2
+0 -> elänkö uudestaan kaipauksen aikaa? A | kuolemasta kudoten rakkauden rajun A
+A -> sinäkö siellä hävität tätä vaivaa B | minäkö vain määritän hämärän aikaa B
+B -> ohjaanko enää itsekään laivaa C | ohjattu olo päihteenkö taikaa C
+C -> jolla itsessään kovinkin soma | olla itsekin sominkin kova
+1 -> kerro nyt vähäsen D | selitänkö hiukkasen D
+D -> mitä sä tunnet E | näin mä nään E
+E -> yksinkö tässä F | läpikö pään F
+F -> aatteissa kuljen G | mielestään löytää G
+G -> taasko nään kun sydämeni suljen | kierrellen kaarrelen mietteissäin kuljen
+2 -> luovunko tästä H | hulluusko määrää H
+H -> huolesta muiden I | pelkkää vain väärää I
+I -> paremmin tietää J | koetatkin sietää J
+J -> rakkauttaan rakentaa K | pahuuttaan vaimentaa K
+K -> pitääkö tehdä aina vain vaikeempaa | syndäänkö lie näin laimentaa
+
+
+
