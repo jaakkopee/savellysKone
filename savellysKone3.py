@@ -337,7 +337,8 @@ if __name__=="__main__":
     pitch_grammar_str = """
     S -> A A A A A A A A
     A -> 60 A | 60 B | 60
-    B -> 62 B | 62
+    B -> 62 B | 62 C | 64 C | 66
+    C -> 63 | A
 
     """
 
@@ -360,13 +361,13 @@ if __name__=="__main__":
     """
 
     #generators
-    pitch_generator = ListGenerator(pitch_grammar_str, 8, "pitch")
+    pitch_generator = ListGenerator(pitch_grammar_str, 16, "pitch")
     #generators can be None, in which case a default list is used
     #Note lists produced by default are all 60, 1.0, 100
     #leaving any of the generators as None will use the default values for that parameter
     #these values can be changed via the Song class
-    duration_generator = ListGenerator(duration_grammar_str, 8, "duration")
-    velocity_generator = ListGenerator(velocity_grammar_str, 8, "velocity")
+    duration_generator = ListGenerator(duration_grammar_str, 16, "duration")
+    velocity_generator = ListGenerator(velocity_grammar_str, 16, "velocity")
 
     #make the song
     song = Song(num_bars=16, ioi=0.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=False)
@@ -376,7 +377,7 @@ if __name__=="__main__":
     #song.modulate_duration_with_sin(1, 0.1)
     #song.modulate_onset_with_sin(1, 0.06) #add sway
     #song.modulate_onset_with_sin(1.5, 0.06) #add sway another way
-    #song.modulate_onset_with_sin_phase_by_bar(0.5, 0.6) #add groove with phase reset by bar onset
+    song.modulate_onset_with_sin_phase_by_bar(0.5, 0.6) #add groove with phase reset by bar onset
     #song.modulate_velocity_with_sin(1, 10)
     #custom transpose algorithm
     pitch = 0
@@ -417,14 +418,15 @@ if __name__=="__main__":
     """
 
     #generators
-    pitch_generator = ListGenerator(pitch_grammar_str, 8, "pitch")
-    duration_generator = ListGenerator(duration_grammar_str, 8, "duration")
-    velocity_generator = ListGenerator(velocity_grammar_str, 8, "velocity")
+    pitch_generator = ListGenerator(pitch_grammar_str, 16, "pitch")
+    duration_generator = ListGenerator(duration_grammar_str, 16, "duration")
+    velocity_generator = ListGenerator(velocity_grammar_str, 16, "velocity")
 
     #make the song
     song = Song(num_bars=16, ioi=1.0, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=False)
     song.make_bar_list()
     song.set_bar_list_durations(0.3)
+    song.modulate_onset_with_sin_phase_by_bar(0.5, 0.6) #add groove with phase reset by bar onset
 
     #custom transpose algorithm
     pitch = 0
