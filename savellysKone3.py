@@ -261,9 +261,8 @@ class Song:
     
     def modulate_pitch_with_sin(self, freq, amp):
         for bar in self.bar_list:
-            bar_onset = bar.bar_onset
             for note in bar.note_list:
-                note.pitch += int(math.sin((note.onset+bar_onset)*freq)*amp)
+                note.pitch += int(math.sin((note.onsett)*freq)*amp)
                 if note.pitch < 0:
                     note.pitch = 0
                 if note.pitch > 127:
@@ -271,18 +270,16 @@ class Song:
     
     def modulate_duration_with_sin(self, freq, amp):
         for bar in self.bar_list:
-            bar_onset = bar.bar_onset
             for note in bar.note_list:
-                note.duration += math.sin((note.onset+bar_onset)*freq)*amp
+                note.duration += math.sin((note.onset)*freq)*amp
                 if note.duration < 0:
                     note.duration = 0
         return
     
     def modulate_velocity_with_sin(self, freq, amp):
         for bar in self.bar_list:
-            bar_onset = bar.bar_onset
             for note in bar.note_list:
-                note.velocity += int(math.sin((note.onset+bar_onset)*freq)*amp)
+                note.velocity += int(math.sin((note.onset)*freq)*amp)
                 if note.velocity < 0:
                     note.velocity = 0
                 if note.velocity > 127:
@@ -329,5 +326,8 @@ if __name__=="__main__":
     velocity_generator = None #ListGenerator(velocity_grammar_str, 8, "velocity")
     song = Song(num_bars=16, ioi=0.4, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=False)
     song.make_bar_list()
+    song.set_bar_list_durations(0.2)
+    song.modulate_duration_with_sin(1, 0.1)
     song.modulate_onset_with_sin(1, 0.1) #add groove
+    song.modulate_velocity_with_sin(1, 10)
     song.make_midi_file("testGrammarsBassLine.mid")
