@@ -111,47 +111,48 @@ class Bar:
         return
     
     def reverse_note_list(self):
-        self.pitch_list.reverse()
-        self.duration_list.reverse()
-        self.velocity_list.reverse()
-        self.make_note_list()
+        self.note_list.reverse()
         return
     
     def set_note_list_durations(self, duration):
-        self.duration_list = []
-        for i in range(len(self.pitch_list)):
-            self.duration_list.append(duration)
-        self.make_note_list()
+        for note in self.note_list:
+            note.duration = duration
         return
     
     def transpose_note_list(self, semitone):
-        for i in range(len(self.pitch_list)):
-            self.pitch_list[i] += semitone
-        self.make_note_list()
+        for note in self.note_list:
+            note.pitch += semitone
+            if note.pitch < 0:
+                note.pitch = 0
+            if note.pitch > 127:
+                note.pitch = 127
         return
     
     def random_pitch(self):
-        for i in range(len(self.pitch_list)):
-            self.pitch_list[i] += random.randint(-12, 24)
-        self.make_note_list()
+        for i in range(len(self.note_list)):
+            self.note_list[i].pitch += random.randint(-3, 3)
+            if self.note_list[i].pitch < 0:
+                self.note_list[i].pitch = 0
+            if self.note_list[i].pitch > 127:
+                self.note_list[i].pitch = 127
         return
     
     def random_onset(self):
-        for i in range(len(self.pitch_list)):
+        for i in range(len(self.note_list)):
             self.note_list[i].onset += (random.random()-0.5)*0.8
             if self.note_list[i].onset < 0:
                 self.note_list[i].onset = 0
         return
     
     def random_duration(self):
-        for i in range(len(self.pitch_list)):
+        for i in range(len(self.note_list)):
             self.note_list[i].duration += (random.random()-0.5)*0.8
             if self.note_list[i].duration < 0:
                 self.note_list[i].duration = 0
         return
     
     def random_velocity(self):
-        for i in range(len(self.pitch_list)):
+        for i in range(len(self.note_list)):
             self.note_list[i].velocity += random.randint(-20, 20)
             if self.note_list[i].velocity < 0:
                 self.note_list[i].velocity = 0
