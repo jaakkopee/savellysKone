@@ -338,12 +338,11 @@ if __name__=="__main__":
     velocity_generator = ListGenerator(velocity_grammar_str, 8, "velocity")
     song = Song(16, 1.0, pitch_generator, duration_generator, velocity_generator, False)
     song.make_bar_list()
-    song.modulate_onset_with_sin(2, 0.5) #add groove
-    song.modulate_onset_with_sin(4, 0.5) #... strange groove
-    pitch = 0
+    song.modulate_onset_with_sin(1, 0.1) #add groove
+    pitch_shift = 0
     for bar in song.bar_list:
-        pitch+=1
-        pitch = pitch%4
-        bar.transpose_note_list(pitch)
+        pitch_shift += 1
+        pitch_shift %= 4
+        bar.transpose_note_list(pitch_shift) #transpose each bar
 
     song.make_midi_file("testListGen.mid")
