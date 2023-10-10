@@ -325,9 +325,9 @@ if __name__=="__main__":
     """
 
     pitch_generator = ListGenerator(pitch_grammar_str, 8, "pitch")
-    duration_generator = ListGenerator(duration_grammar_str, 8, "duration")
-    velocity_generator = ListGenerator(velocity_grammar_str, 8, "velocity")
-    song = Song(16, 0.4, pitch_generator, duration_generator, velocity_generator, False)
+    duration_generator = None #ListGenerator(duration_grammar_str, 8, "duration")
+    velocity_generator = None #ListGenerator(velocity_grammar_str, 8, "velocity")
+    song = Song(num_bars=16, ioi=0.4, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=False)
     song.make_bar_list()
     song.modulate_onset_with_sin(1, 0.1) #add groove
     song.make_midi_file("testGrammarsBassLine.mid")
