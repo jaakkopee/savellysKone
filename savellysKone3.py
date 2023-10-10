@@ -43,7 +43,7 @@ def parse_grammar(f):
             for alternative in alternatives:
                 grammar.add_rule(GrammarRule(lhs, alternative))
     return grammar
-
+#
 def generate_from_symbol(grammar, symbol):
     options = [rule.rhs for rule in grammar.rules if rule.lhs == symbol]
     if options:
