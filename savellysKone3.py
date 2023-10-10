@@ -328,11 +328,21 @@ if __name__=="__main__":
     #these values can be changed via the Song class
     duration_generator = None #ListGenerator(duration_grammar_str, 8, "duration")
     velocity_generator = None #ListGenerator(velocity_grammar_str, 8, "velocity")
+
+    #make the song
     song = Song(num_bars=16, ioi=0.4, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=False)
-    song.make_bar_list()
+    song.make_bar_list() #this is the method that actually generates the song
     #all the methods below can be used to modify the song plus some untested ones.
     song.set_bar_list_durations(0.2)
     song.modulate_duration_with_sin(1, 0.1)
     song.modulate_onset_with_sin(1, 0.1) #add groove
     song.modulate_velocity_with_sin(1, 10)
+    #custom transpose algorithm
+    pitch = 0
+    sign = 1
+    for bar in song.bar_list:
+        bar.transpose_note_list(pitch*sign)
+        pitch += 1
+        pitch %= 4
+        sign *= -1
     song.make_midi_file("testGrammarsBassLine.mid")
