@@ -341,9 +341,11 @@ if __name__=="__main__":
     song.make_bar_list()
     song.modulate_onset_with_sin(1, 0.1) #add groove
     pitch_shift = 0
+    sign = 1
     for bar in song.bar_list:
         pitch_shift += 1
         pitch_shift %= 4
-        bar.transpose_note_list(pitch_shift) #transpose each bar
+        sign *= -1
+        bar.transpose_note_list(pitch_shift*sign) #transpose each bar
 
     song.make_midi_file("testListGen.mid")
