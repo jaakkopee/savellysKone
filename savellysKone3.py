@@ -1,6 +1,5 @@
 #this program uses grammars to generate midi files
 #also includes some methods for modifying the generated music
-#uses the midiutil library to write midi files
 
 
 from midiutil import MIDIFile
