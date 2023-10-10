@@ -340,4 +340,10 @@ if __name__=="__main__":
     song.make_bar_list()
     song.modulate_onset_with_sin(2, 0.5) #add groove
     song.modulate_onset_with_sin(4, 0.5) #... strange groove
+    pitch = 0
+    for bar in song.bar_list:
+        pitch+=1
+        pitch = pitch%4
+        bar.transpose_note_list(pitch)
+
     song.make_midi_file("testListGen.mid")
