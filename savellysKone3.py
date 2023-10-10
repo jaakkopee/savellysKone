@@ -377,7 +377,7 @@ if __name__=="__main__":
     #song.modulate_duration_with_sin(1, 0.1)
     #song.modulate_onset_with_sin(1, 0.06) #add sway
     #song.modulate_onset_with_sin(1.5, 0.06) #add sway another way
-    song.modulate_onset_with_sin_phase_by_bar(0.5, 0.6) #add groove with phase reset by bar onset
+    #song.modulate_onset_with_sin_phase_by_bar(0.5, 0.6) #add groove with phase reset by bar onset
     #song.modulate_velocity_with_sin(1, 10)
     #custom transpose algorithm
     pitch = 0
@@ -426,7 +426,7 @@ if __name__=="__main__":
     song = Song(num_bars=16, ioi=1.0, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=False)
     song.make_bar_list()
     song.set_bar_list_durations(0.3)
-    song.modulate_onset_with_sin_phase_by_bar(0.5, 0.6) #add groove with phase reset by bar onset
+    #song.modulate_onset_with_sin_phase_by_bar(0.5, 0.6) #add groove with phase reset by bar onset
 
     #custom transpose algorithm
     pitch = 0
