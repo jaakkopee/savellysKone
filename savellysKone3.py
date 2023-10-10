@@ -1,4 +1,8 @@
 #this program uses grammars to generate midi files
+#also includes some methods for modifying the generated music
+#uses the midiutil library to write midi files
+
+
 from midiutil import MIDIFile
 import random
 import math
@@ -287,12 +291,46 @@ class Song:
 
     def modulate_onset_with_sin(self, freq, amp):
         for bar in self.bar_list:
-            bar_onset = bar.bar_onset
             for note in bar.note_list:
-                note.onset += math.sin((note.onset+bar_onset)*freq)*amp
+                note.onset += math.sin((note.onset)*freq)*amp
                 if note.onset < 0:
                     note.onset = 0
         return
+    
+    def modulate_pitch_with_sin_phase_by_bar(self, freq, amp):
+        for bar in self.bar_list:
+            for note in bar.note_list:
+                note.pitch += int(math.sin((note.onset+bar.bar_onset)*freq)*amp)
+                if note.pitch < 0:
+                    note.pitch = 0
+                if note.pitch > 127:
+                    note.pitch = 127
+
+    def modulate_duration_with_sin_phase_by_bar(self, freq, amp):
+        for bar in self.bar_list:
+            for note in bar.note_list:
+                note.duration += math.sin((note.onset+bar.bar_onset)*freq)*amp
+                if note.duration < 0:
+                    note.duration = 0
+        return
+    
+    def modulate_velocity_with_sin_phase_by_bar(self, freq, amp):
+        for bar in self.bar_list:
+            for note in bar.note_list:
+                note.velocity += int(math.sin((note.onset+bar.bar_onset)*freq)*amp)
+                if note.velocity < 0:
+                    note.velocity = 0
+                if note.velocity > 127:
+                    note.velocity = 127
+
+    def modulate_onset_with_sin_phase_by_bar(self, freq, amp):
+        for bar in self.bar_list:
+            for note in bar.note_list:
+                note.onset += math.sin((note.onset+bar.bar_onset)*freq)*amp
+                if note.onset < 0:
+                    note.onset = 0
+        return
+    
     
 if __name__=="__main__":
     #a simple bass line
@@ -325,6 +363,7 @@ if __name__=="__main__":
     pitch_generator = ListGenerator(pitch_grammar_str, 8, "pitch")
     #generators can be None, in which case a default list is used
     #Note lists produced by default are all 60, 1.0, 100
+    #leaving any of the generators as None will use the default values for that parameter
     #these values can be changed via the Song class
     duration_generator = None #ListGenerator(duration_grammar_str, 8, "duration")
     velocity_generator = None #ListGenerator(velocity_grammar_str, 8, "velocity")
@@ -337,6 +376,7 @@ if __name__=="__main__":
     song.modulate_duration_with_sin(1, 0.1)
     song.modulate_onset_with_sin(1, 0.1) #add groove
     song.modulate_onset_with_sin(1.5, 0.1) #add more groove
+    song.modulate_onset_with_sin(30, 0.03) #add stutter
     song.modulate_velocity_with_sin(1, 10)
     #custom transpose algorithm
     pitch = 0
