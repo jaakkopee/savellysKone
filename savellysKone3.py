@@ -336,6 +336,7 @@ if __name__=="__main__":
     song.set_bar_list_durations(0.2)
     song.modulate_duration_with_sin(1, 0.1)
     song.modulate_onset_with_sin(1, 0.1) #add groove
+    song.modulate_onset_with_sin(1.5, 0.1) #add more groove
     song.modulate_velocity_with_sin(1, 10)
     #custom transpose algorithm
     pitch = 0
