@@ -379,14 +379,6 @@ if __name__=="__main__":
     #song.modulate_onset_with_sin(1.5, 0.06) #add sway another way
     #song.modulate_onset_with_sin_phase_by_bar(0.5, 0.6) #add groove with phase reset by bar onset
     #song.modulate_velocity_with_sin(1, 10)
-    #custom transpose algorithm
-    pitch = 0
-    sign = 1
-    for bar in song.bar_list:
-        bar.transpose_note_list(pitch*sign)
-        sign *= -1
-        pitch += 1
-        pitch %= 4
 
     
     song.make_midi_file("testPow2LimitBassLine.mid")
@@ -395,12 +387,12 @@ if __name__=="__main__":
     pitch_grammar_str = """
     S -> A A A A
     A -> 60 A | 60 B | 60
-    B -> 62 B | 62 C
-    C -> 64 C | 64 D
-    D -> 65 D | 65 E
-    E -> 67 E | 67 F
-    F -> 69 F | 69 G
-    G -> 71 G | 71
+    B -> 64 B | 64 C
+    C -> 68 C | 68 D
+    D -> 72 D | 72 E
+    E -> 68 E | 68 F
+    F -> 64 F | 64 G
+    G -> 60 G | 60
     """
 
     duration_grammar_str = """
@@ -423,19 +415,10 @@ if __name__=="__main__":
     velocity_generator = ListGenerator(velocity_grammar_str, 16, "velocity")
 
     #make the song
-    song = Song(num_bars=16, ioi=1.0, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=False)
+    song = Song(num_bars=16, ioi=1.0, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
     song.make_bar_list()
     song.set_bar_list_durations(0.3)
-    #song.modulate_onset_with_sin_phase_by_bar(0.5, 0.6) #add groove with phase reset by bar onset
-
-    #custom transpose algorithm
-    pitch = 0
-    sign = 1
-    for bar in song.bar_list:
-        bar.transpose_note_list(pitch*sign)
-        sign *= -1
-        pitch += 1
-        pitch %= 4
+    #song.modulate_onset_with_sin_phase_by_bar(0.5, 0.6) #add groove with phase reset by bar onset4
 
 
     song.make_midi_file("testPow2LimitMelody.mid")
