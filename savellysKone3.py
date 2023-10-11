@@ -377,11 +377,11 @@ if __name__=="__main__":
     #song.modulate_duration_with_sin(1, 0.1)
     #song.modulate_onset_with_sin(1, 0.06) #add sway
     #song.modulate_onset_with_sin(1.5, 0.06) #add sway another way
-    song.modulate_onset_with_sin_phase_by_bar(0.3, 0.6) #add groove with phase reset by bar onset
+    #song.modulate_onset_with_sin_phase_by_bar(0.3, 0.6) #add groove with phase reset by bar onset
     #song.modulate_velocity_with_sin(1, 10)
 
     
-    song.make_midi_file("testPow2LimitBassLine.mid")
+    song.make_midi_file("test066BassLine.mid")
 
     #a simple melody
     pitch_grammar_str = """
@@ -418,10 +418,47 @@ if __name__=="__main__":
     song = Song(num_bars=16, ioi=1.0, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
     song.make_bar_list()
     song.set_bar_list_durations(0.3)
-    song.modulate_onset_with_sin_phase_by_bar(0.3, 0.6) #add groove with phase reset by bar onset
+    #song.modulate_onset_with_sin_phase_by_bar(0.3, 0.6) #add groove with phase reset by bar onset
 
 
-    song.make_midi_file("testPow2LimitMelody.mid")
+    song.make_midi_file("test066Melody.mid")
 
+
+    #a simple drum pattern
+    pitch_grammar_str = """
+    S -> A A A A
+    A -> 36 A | 36 B | 36
+    B -> 38 B | 38 C
+    C -> 42 C | 42 D
+    D -> 46 D | 46 E
+    E -> 42 E | 42 F
+    F -> 38
+    """
+
+    duration_grammar_str = """
+    S -> A A A A
+    A -> 0.1 A | 0.11 B | 0.111
+    B -> 0.25 B | 0.25
+    """
+
+    velocity_grammar_str = """
+    S -> A B C D
+    A -> 100 A | 90 A | 80 | 70
+    B -> 100 B | 90 B | 80 | 70
+    C -> 100 C | 90 C | 80 | 70
+    D -> 100 D | 90 D | 80 | 70
+    """
+
+    #generators
+    pitch_generator = ListGenerator(pitch_grammar_str, 16, "pitch")
+    duration_generator = ListGenerator(duration_grammar_str, 16, "duration")
+    velocity_generator = ListGenerator(velocity_grammar_str, 16, "velocity")
+
+    #make the song
+    song = Song(num_bars=16, ioi=0.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
+    song.make_bar_list()
+
+    song.make_midi_file("test066Drums.mid")
+    
 
     
