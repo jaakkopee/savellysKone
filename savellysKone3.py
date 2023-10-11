@@ -72,8 +72,8 @@ class ListGenerator:
 
     def generate_list(self):
         self.list = []
-        powers_of_two = [2**i for i in range(10)]
-        while (len(self.list) < self.min_length) or (len(self.list) not in powers_of_two):
+        #powers_of_two = [2**i for i in range(10)]
+        while (len(self.list) < self.min_length) or (len(self.list)%2 != 0):
             self.list = generate(self.grammar, "S", 64)
             self.list = self.list.split()
             if self.type == "pitch":
