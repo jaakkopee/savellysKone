@@ -54,12 +54,12 @@ duration_generator = ListGenerator(duration_grammar_string, 16, "duration")
 velocity_generator = ListGenerator(velocity_grammar_string, 16, "velocity")
 
 #song
-song = Song(num_bars=32, ioi=0.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
+song = Song(num_bars=16, ioi=0.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
 song.make_bar_list()
-song.modulate_onset_with_sin_phase_by_bar(0.1, 1.8)
-song.modulate_pitch_with_sin_phase_by_bar(1.0, 1.8)
-song.modulate_velocity_with_sin_phase_by_bar(0.333, 1.8)
-song.modulate_duration_with_sin_phase_by_bar(0.5, 0.01)
+song.modulate_onset_with_sin_phase_by_bar(0.6, 0.8)
+#song.modulate_pitch_with_sin_phase_by_bar(1.0, 1.8)
+#song.modulate_velocity_with_sin_phase_by_bar(0.333, 1.8)
+#song.modulate_duration_with_sin_phase_by_bar(0.5, 0.01)
 
 #render
 song.make_midi_file("sk3_test01.mid")
