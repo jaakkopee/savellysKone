@@ -268,7 +268,7 @@ class Song:
     def modulate_pitch_with_sin(self, freq, amp):
         for bar in self.bar_list:
             for note in bar.note_list:
-                note.pitch += int(math.sin((note.onsett)*freq)*amp)
+                note.pitch += int(math.sin((note.onset)*freq)*amp)
                 if note.pitch < 0:
                     note.pitch = 0
                 if note.pitch > 127:
