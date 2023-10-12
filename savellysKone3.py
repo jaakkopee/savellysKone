@@ -6,6 +6,7 @@ from midiutil import MIDIFile
 import random
 import math
 import musical_scales as ms
+import sys
 
 class Grammar:
     def __init__(self):
@@ -224,6 +225,7 @@ class Song:
         return
     
     def reverse_bar_list(self):
+        #not tested, probably buggy and not work
         self.bar_list.reverse()
         for bar in self.bar_list:
             bar.reverse_note_list()
@@ -335,29 +337,51 @@ class Song:
 if __name__=="__main__":
     #a simple bass line
     pitch_grammar_str = """
-    S -> A A A A A A A A
-    A -> 60 A | 60 B | 60
-    B -> 62 B | 62 C | 64 C | 66
-    C -> 63 | A
-
+    S -> a b c d
+    a -> A B C D
+    b -> E F G H
+    c -> I J K L
+    d -> M N O P
+    A -> 36 36 48 36 | 36 36 40 36
+    B -> 40 40 52 40 | 40 40 44 40
+    C -> 44 44 56 44 | 44 44 48 44
+    D -> 48 48 60 48 | 48 48 52 48
+    E -> 36 36 56 36 | 36 36 48 36
+    F -> 40 40 60 40 | 40 40 52 40
+    G -> 44 44 64 44 | 44 44 56 44
+    H -> 48 48 68 48 | 48 48 60 48
+    I -> 36 36 56 36 | 36 36 48 36
+    J -> 40 40 60 40 | 40 40 52 40
+    K -> 44 44 64 44 | 44 44 56 44
+    L -> 48 48 68 48 | 48 48 60 48
+    M -> 36 36 40 36 | 36 36 48 36
+    N -> 40 40 44 40 | 40 40 52 40
+    O -> 44 44 48 44 | 44 44 56 44
+    P -> 48 48 52 48 | 48 48 60 48
     """
 
     duration_grammar_str = """
-    S -> A A A A A A A A
-    A -> 0.1 A | 0.11 B | 0.111
-    B -> 0.25 B | 0.25
+    S -> a b c d
+    a -> A B C D
+    b -> A B C D
+    c -> A B C D
+    d -> A B C D
+    A -> 0.01 0.1 0.25 0.125
+    B -> 0.02 0.06 0.30 0.16
+    C -> 0.03 0.08 0.35 0.18
+    D -> 0.04 0.09 0.40 0.20
     """
 
     velocity_grammar_str = """
-    S -> A B C D E F G H
-    A -> 100 A | 90 A | 80 | 70
-    B -> 100 B | 90 B | 80 | 70
-    C -> 100 C | 90 C | 80 | 70
-    D -> 100 D | 90 D | 80 | 70
-    E -> 100 E | 90 E | 80 | 70
-    F -> 100 F | 90 F | 80 | 70
-    G -> 100 G | 90 G | 80 | 70
-    H -> 100 H | 90 H | 80 | 70
+    S -> a b c d
+    a -> A B C D
+    b -> A B C D
+    c -> A B C D
+    d -> A B C D
+    A -> 100 120 127 120
+    B -> 110 127 110 127
+    C -> 120 110 100 90
+    D -> 127 127 100 127
     """
 
     #generators
@@ -370,7 +394,7 @@ if __name__=="__main__":
     velocity_generator = ListGenerator(velocity_grammar_str, 16, "velocity")
 
     #make the song
-    song = Song(num_bars=16, ioi=0.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=False)
+    song = Song(num_bars=16, ioi=0.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
     song.make_bar_list() #this is the method that actually generates the song
     #all the methods below can be used to modify the song plus some untested ones.
     #song.set_bar_list_durations(0.2)
@@ -385,28 +409,51 @@ if __name__=="__main__":
 
     #a simple melody
     pitch_grammar_str = """
-    S -> A A A A
-    A -> 60 A | 60 B | 60
-    B -> 64 B | 64 C
-    C -> 68 C | 68 D
-    D -> 72 D | 72 E
-    E -> 68 E | 68 F
-    F -> 64 F | 64 G
-    G -> 60 G | 60
+    S -> a b c d
+    a -> A B C D
+    b -> E F G H
+    c -> I J K L
+    d -> M N O P
+    A -> 60 60 72 60 | 60 60 64 60
+    B -> 64 64 76 64 | 64 64 68 64
+    C -> 68 68 80 68 | 68 68 72 68
+    D -> 72 72 84 72 | 72 72 76 72
+    E -> 60 60 80 60 | 60 60 72 60
+    F -> 64 64 84 64 | 64 64 76 64
+    G -> 68 68 88 68 | 68 68 80 68
+    H -> 72 72 92 72 | 72 72 84 72
+    I -> 60 60 80 60 | 60 60 72 60
+    J -> 64 64 84 64 | 64 64 76 64
+    K -> 68 68 88 68 | 68 68 80 68
+    L -> 72 72 92 72 | 72 72 84 72
+    M -> 60 60 64 60 | 60 60 72 60
+    N -> 64 64 68 64 | 64 64 76 64
+    O -> 68 68 72 68 | 68 68 80 68
+    P -> 72 72 76 72 | 72 72 84 72
     """
 
     duration_grammar_str = """
-    S -> A A A A
-    A -> 0.1 A | 0.11 B | 0.111
-    B -> 0.25 B | 0.25
-    """ 
+    S -> a b c d
+    a -> A B C D
+    b -> A B C D
+    c -> A B C D
+    d -> A B C D
+    A -> 1.0 1.5 2.0 0.5
+    B -> 1.0 1.5 2.0 0.5
+    C -> 1.0 1.5 2.0 0.5
+    D -> 1.0 1.5 2.0 0.5
+    """
 
     velocity_grammar_str = """
-    S -> A B C D
-    A -> 100 A | 90 A | 80 | 70
-    B -> 100 B | 90 B | 80 | 70
-    C -> 100 C | 90 C | 80 | 70
-    D -> 100 D | 90 D | 80 | 70
+    S -> a b c d
+    a -> A B C D
+    b -> A B C D
+    c -> A B C D
+    d -> A B C D
+    A -> 100 120 127 120
+    B -> 110 127 110 127
+    C -> 120 110 100 90
+    D -> 127 127 100 127
     """
 
     #generators
@@ -415,38 +462,60 @@ if __name__=="__main__":
     velocity_generator = ListGenerator(velocity_grammar_str, 16, "velocity")
 
     #make the song
-    song = Song(num_bars=16, ioi=1.0, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
+    song = Song(num_bars=16, ioi=1.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
     song.make_bar_list()
-    song.set_bar_list_durations(0.3)
     #song.modulate_onset_with_sin_phase_by_bar(0.3, 0.6) #add groove with phase reset by bar onset
 
 
     song.make_midi_file("test066Melody.mid")
 
-
     #a simple drum pattern
     pitch_grammar_str = """
-    S -> A A A A
-    A -> 36 A | 36 B | 36
-    B -> 38 B | 38 C
-    C -> 42 C | 42 D
-    D -> 46 D | 46 E
-    E -> 42 E | 42 F
-    F -> 38
+    S -> a b c d
+    a -> A B C D
+    b -> E F G H
+    c -> I J K L
+    d -> M N O P
+    A -> 36 36 38 36 | 36 36 40 36
+    B -> 36 38 36 38 | 36 40 36 40
+    C -> 36 36 38 36 | 36 36 42 36
+    D -> 36 36 36 38 | 36 36 36 40
+    E -> 36 36 38 36 | 36 36 40 36
+    F -> 36 38 36 38 | 36 40 36 40
+    G -> 36 36 38 36 | 36 36 42 36
+    H -> 36 36 36 38 | 36 36 36 40
+    I -> 36 36 38 36 | 36 36 40 36
+    J -> 36 38 36 38 | 36 40 36 40
+    K -> 36 36 38 36 | 36 36 42 36
+    L -> 36 36 36 38 | 36 36 36 40
+    M -> 36 36 38 36 | 36 36 40 36
+    N -> 36 38 36 38 | 36 40 36 40
+    O -> 36 36 38 36 | 36 36 42 36
+    P -> 36 36 36 38 | 36 36 36 40
     """
 
     duration_grammar_str = """
-    S -> A A A A
-    A -> 0.1 A | 0.11 B | 0.111
-    B -> 0.25 B | 0.25
+    S -> a b c d
+    a -> A B C D
+    b -> A B C D
+    c -> A B C D
+    d -> A B C D
+    A -> 0.01 0.1 0.25 0.125
+    B -> 0.02 0.06 0.30 0.16
+    C -> 0.03 0.08 0.35 0.18
+    D -> 0.04 0.09 0.40 0.20
     """
 
     velocity_grammar_str = """
-    S -> A B C D
-    A -> 100 A | 90 A | 80 | 70
-    B -> 100 B | 90 B | 80 | 70
-    C -> 100 C | 90 C | 80 | 70
-    D -> 100 D | 90 D | 80 | 70
+    S -> a b c d
+    a -> A B C D
+    b -> A B C D
+    c -> A B C D
+    d -> A B C D
+    A -> 100 120 127 120
+    B -> 110 127 110 127
+    C -> 120 110 100 90
+    D -> 127 127 100 127
     """
 
     #generators
@@ -457,8 +526,9 @@ if __name__=="__main__":
     #make the song
     song = Song(num_bars=16, ioi=0.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
     song.make_bar_list()
+    song.modulate_onset_with_sin_phase_by_bar(2, 0.06) #add groove with phase reset by bar onset
 
     song.make_midi_file("test066Drums.mid")
-    
+
 
     
