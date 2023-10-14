@@ -357,7 +357,7 @@ if __name__=="__main__":
     duration_generator = ListGenerator(duration_grammar_str, 8, "duration")
     velocity_generator = ListGenerator(velocity_grammar_str, 8, "velocity")
 
-    song = Song("ionic_upwards", 4, 1.5, pitch_generator, duration_generator, velocity_generator, True)
+    song = Song(name="ionic_upwards", num_bars=4, ioi=1.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
     song.make_bar_list()
     song.make_midi_file("testGGP2.mid")
 
