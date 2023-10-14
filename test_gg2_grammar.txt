@@ -1,0 +1,7 @@
+$S -> $jpts ajaa $kulkuväline
+$jpts -> Jaakko Juhani Prättälä
+$kulkuväline -> autoa | junalla | bussilla | polkupyörällä
+
+
+
+

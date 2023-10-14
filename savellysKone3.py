@@ -7,67 +7,13 @@ import random
 import math
 import musical_scales as ms
 import sys
+import gengramparser2 as ggp
 
-class Grammar:
-    def __init__(self):
-        self.rules = []
-
-    def add_rule(self, rule):
-        self.rules.append(rule)
-
-    def __str__(self):
-        return "\n".join(map(str, self.rules))
-
-    def __repr__(self):
-        return self.__str__()
-    
-class GrammarRule:
-    def __init__(self, lhs, rhs):
-        self.lhs = lhs
-        self.rhs = rhs
-
-    def __str__(self):
-        return self.lhs + " -> " + self.rhs
-
-    def __repr__(self):
-        return self.__str__()
-    
-def parse_grammar(f):
-    grammar = Grammar()
-    for line in f:
-        line = line.strip()
-        if line:
-            lhs, rhs_alternatives = line.split("->")
-            lhs = lhs.strip()
-            alternatives = rhs_alternatives.split("|")
-            alternatives = [alt.strip() for alt in alternatives]
-            for alternative in alternatives:
-                grammar.add_rule(GrammarRule(lhs, alternative))
-    return grammar
-
-def generate_from_symbol(grammar, symbol):
-    options = [rule.rhs for rule in grammar.rules if rule.lhs == symbol]
-    if options:
-        return random.choice(options)
-    return symbol
-
-def generate_from_string(grammar, string):
-    output = ""
-    for symbol in string:
-        output += generate_from_symbol(grammar, symbol)
-    return output
-
-def generate(grammar, symbol, depth):
-    if depth == 0:
-        return symbol
-    else:
-        return generate(grammar, generate_from_string(grammar, symbol), depth - 1)
-    
 
 class ListGenerator:
     def __init__(self, grammar_str, min_length=8, type="pitch"):
         self.type = type
-        self.grammar = parse_grammar(grammar_str.split("\n"))
+        self.grammar = ggp.parse_grammar(grammar_str.split("\n"))
         self.min_length = min_length
         self.list = []
 
@@ -75,7 +21,7 @@ class ListGenerator:
         self.list = []
         #powers_of_two = [2**i for i in range(10)]
         while (len(self.list) < self.min_length) or (len(self.list)%2 != 0):
-            self.list = generate(self.grammar, "S", 64)
+            self.list = ggp.generate(self.grammar, "$S", 64)
             self.list = self.list.split()
             if self.type == "pitch":
                 self.list = [int(note) for note in self.list]
@@ -361,200 +307,55 @@ class Song:
     
     
 if __name__=="__main__":
-    #a simple bass line
-    pitch_grammar_str = """
-    S -> a b c d
-    a -> A B C D
-    b -> E F G H
-    c -> I J K L
-    d -> M N O P
-    A -> 36 36 48 36 | 36 36 40 36
-    B -> 40 40 52 40 | 40 40 44 40
-    C -> 44 44 56 44 | 44 44 48 44
-    D -> 48 48 60 48 | 48 48 52 48
-    E -> 36 36 56 36 | 36 36 48 36
-    F -> 40 40 60 40 | 40 40 52 40
-    G -> 44 44 64 44 | 44 44 56 44
-    H -> 48 48 68 48 | 48 48 60 48
-    I -> 36 36 56 36 | 36 36 48 36
-    J -> 40 40 60 40 | 40 40 52 40
-    K -> 44 44 64 44 | 44 44 56 44
-    L -> 48 48 68 48 | 48 48 60 48
-    M -> 36 36 40 36 | 36 36 48 36
-    N -> 40 40 44 40 | 40 40 52 40
-    O -> 44 44 48 44 | 44 44 56 44
-    P -> 48 48 52 48 | 48 48 60 48
-    """
-
-    duration_grammar_str = """
-    S -> a b c d
-    a -> A B C D
-    b -> A B C D
-    c -> A B C D
-    d -> A B C D
-    A -> 0.01 0.1 0.25 0.125
-    B -> 0.02 0.06 0.30 0.16
-    C -> 0.03 0.08 0.35 0.18
-    D -> 0.04 0.09 0.40 0.20
-    """
-
-    velocity_grammar_str = """
-    S -> a b c d
-    a -> A B C D
-    b -> A B C D
-    c -> A B C D
-    d -> A B C D
-    A -> 100 120 127 120
-    B -> 110 127 110 127
-    C -> 120 110 100 90
-    D -> 127 127 100 127
-    """
-
-    #generators
-    pitch_generator = ListGenerator(pitch_grammar_str, 16, "pitch")
-    #generators can be None, in which case a default list is used
-    #Note lists produced by default are all 60, 1.0, 100
-    #leaving any of the generators as None will use the default values for that parameter
-    #these values can be changed via the Song class
-    duration_generator = ListGenerator(duration_grammar_str, 16, "duration")
-    velocity_generator = ListGenerator(velocity_grammar_str, 16, "velocity")
-
-    #make the song
-    song = Song(num_bars=16, ioi=0.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
-    song.make_bar_list() #this is the method that actually generates the song
-    #all the methods below can be used to modify the song plus some untested ones.
-    #song.set_bar_list_durations(0.2)
-    #song.modulate_duration_with_sin(1, 0.1)
-    #song.modulate_onset_with_sin(1, 0.06) #add sway
-    #song.modulate_onset_with_sin(1.5, 0.06) #add sway another way
-    #song.modulate_onset_with_sin_phase_by_bar(0.3, 0.6) #add groove with phase reset by bar onset
-    #song.modulate_velocity_with_sin(1, 10)
-
     
-    song.make_midi_file("test066BassLine.mid")
-
-    #a simple melody
+    #generate a song
     pitch_grammar_str = """
-    S -> a b c d
-    a -> A B C D
-    b -> E F G H
-    c -> I J K L
-    d -> M N O P
-    A -> 60 60 72 60 | 60 60 64 60
-    B -> 64 64 76 64 | 64 64 68 64
-    C -> 68 68 80 68 | 68 68 72 68
-    D -> 72 72 84 72 | 72 72 76 72
-    E -> 60 60 80 60 | 60 60 72 60
-    F -> 64 64 84 64 | 64 64 76 64
-    G -> 68 68 88 68 | 68 68 80 68
-    H -> 72 72 92 72 | 72 72 84 72
-    I -> 60 60 80 60 | 60 60 72 60
-    J -> 64 64 84 64 | 64 64 76 64
-    K -> 68 68 88 68 | 68 68 80 68
-    L -> 72 72 92 72 | 72 72 84 72
-    M -> 60 60 64 60 | 60 60 72 60
-    N -> 64 64 68 64 | 64 64 76 64
-    O -> 68 68 72 68 | 68 68 80 68
-    P -> 72 72 76 72 | 72 72 84 72
+    $S -> $phrase01 $phrase02 $phrase03 $phrase04
+    $phrase01 -> $note01 $note02 $note03 $note04
+    $phrase02 -> $note05 $note06 $note07 $note08
+    $phrase03 -> $note09 $note10 $note11 $note12
+    $phrase04 -> $note13 $note14 $note15 $note16
+    $note01 -> 60
+    $note02 -> 62
+    $note03 -> 64
+    $note04 -> 65
+    $note05 -> 67
+    $note06 -> 69
+    $note07 -> 71
+    $note08 -> 72
+    $note09 -> 74
+    $note10 -> 76
+    $note11 -> 77
+    $note12 -> 79
+    $note13 -> 81
+    $note14 -> 83
+    $note15 -> 84
+    $note16 -> 86
     """
 
     duration_grammar_str = """
-    S -> a b c d
-    a -> A B C D
-    b -> A B C D
-    c -> A B C D
-    d -> A B C D
-    A -> 1.0 1.5 2.0 0.5
-    B -> 1.0 1.5 2.0 0.5
-    C -> 1.0 1.5 2.0 0.5
-    D -> 1.0 1.5 2.0 0.5
+    $S -> $phrase01 $phrase01 $phrase01 $phrase01
+    $phrase01 -> $duration01 $duration02 $duration03 $duration04
+    $duration01 -> 0.6
+    $duration02 -> 0.8
+    $duration03 -> 1.0
+    $duration04 -> 1.2
     """
 
     velocity_grammar_str = """
-    S -> a b c d
-    a -> A B C D
-    b -> A B C D
-    c -> A B C D
-    d -> A B C D
-    A -> 100 120 127 120
-    B -> 110 127 110 127
-    C -> 120 110 100 90
-    D -> 127 127 100 127
+    $S -> $phrase01 $phrase01 $phrase01 $phrase01
+    $phrase01 -> $velocity01 $velocity02 $velocity03 $velocity04
+    $velocity01 -> 100
+    $velocity02 -> 110
+    $velocity03 -> 120
+    $velocity04 -> 127
     """
 
-    #generators
-    pitch_generator = ListGenerator(pitch_grammar_str, 16, "pitch")
-    duration_generator = ListGenerator(duration_grammar_str, 16, "duration")
-    velocity_generator = ListGenerator(velocity_grammar_str, 16, "velocity")
+    pitch_generator = ListGenerator(pitch_grammar_str, 8, "pitch")
+    duration_generator = ListGenerator(duration_grammar_str, 8, "duration")
+    velocity_generator = ListGenerator(velocity_grammar_str, 8, "velocity")
 
-    #make the song
-    song = Song(num_bars=16, ioi=1.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
+    song = Song(4, 1.5, pitch_generator, duration_generator, velocity_generator, True)
     song.make_bar_list()
-    #song.modulate_onset_with_sin_phase_by_bar(0.3, 0.6) #add groove with phase reset by bar onset
+    song.make_midi_file("testGGP2.mid")
 
-
-    song.make_midi_file("test066Melody.mid")
-
-    #a simple drum pattern
-    pitch_grammar_str = """
-    S -> a b c d
-    a -> A B C D
-    b -> E F G H
-    c -> I J K L
-    d -> M N O P
-    A -> 36 36 38 36 | 36 36 40 36
-    B -> 36 38 36 38 | 36 40 36 40
-    C -> 36 36 38 36 | 36 36 42 36
-    D -> 36 36 36 38 | 36 36 36 40
-    E -> 36 36 38 36 | 36 36 40 36
-    F -> 36 38 36 38 | 36 40 36 40
-    G -> 36 36 38 36 | 36 36 42 36
-    H -> 36 36 36 38 | 36 36 36 40
-    I -> 36 36 38 36 | 36 36 40 36
-    J -> 36 38 36 38 | 36 40 36 40
-    K -> 36 36 38 36 | 36 36 42 36
-    L -> 36 36 36 38 | 36 36 36 40
-    M -> 36 36 38 36 | 36 36 40 36
-    N -> 36 38 36 38 | 36 40 36 40
-    O -> 36 36 38 36 | 36 36 42 36
-    P -> 36 36 36 38 | 36 36 36 40
-    """
-
-    duration_grammar_str = """
-    S -> a b c d
-    a -> A B C D
-    b -> A B C D
-    c -> A B C D
-    d -> A B C D
-    A -> 0.01 0.1 0.25 0.125
-    B -> 0.02 0.06 0.30 0.16
-    C -> 0.03 0.08 0.35 0.18
-    D -> 0.04 0.09 0.40 0.20
-    """
-
-    velocity_grammar_str = """
-    S -> a b c d
-    a -> A B C D
-    b -> A B C D
-    c -> A B C D
-    d -> A B C D
-    A -> 100 120 127 120
-    B -> 110 127 110 127
-    C -> 120 110 100 90
-    D -> 127 127 100 127
-    """
-
-    #generators
-    pitch_generator = ListGenerator(pitch_grammar_str, 16, "pitch")
-    duration_generator = ListGenerator(duration_grammar_str, 16, "duration")
-    velocity_generator = ListGenerator(velocity_grammar_str, 16, "velocity")
-
-    #make the song
-    song = Song(num_bars=16, ioi=0.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
-    song.make_bar_list()
-    song.modulate_onset_with_sin_phase_by_bar(2, 0.06) #add groove with phase reset by bar onset
-
-    song.make_midi_file("test066Drums.mid")
-
-
-    
