@@ -68,7 +68,7 @@ def generate(grammar, symbol, depth):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python3 gengramparser.py <grammar_file> <depth>")
+        print("Usage: python3 gengramparser2.py <grammar_file> <depth>")
         sys.exit(1)
 
     grammar_file = sys.argv[1]
