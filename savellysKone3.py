@@ -113,7 +113,8 @@ class Bar:
     
     
 class Song:
-    def __init__(self, num_bars=4, ioi=1.0, pitch_generator=None, duration_generator=None, velocity_generator=None, generate_every_bar=False):
+    def __init__(self, name="skTrack", num_bars=4, ioi=1.0, pitch_generator=None, duration_generator=None, velocity_generator=None, generate_every_bar=False):
+        self.name = name
         self.bar_list = []
         self.ioi = ioi
         self.num_bars = num_bars
@@ -163,6 +164,7 @@ class Song:
     
     def make_midi_file(self, filename):
         midi_file = MIDIFile(1)
+        midi_file.addTrackName(0, 0, self.name)
         for bar in self.bar_list:
             for note in bar.note_list:
                 midi_file.addNote(0, 0, note.pitch, note.onset, note.duration, note.velocity)
@@ -355,7 +357,7 @@ if __name__=="__main__":
     duration_generator = ListGenerator(duration_grammar_str, 8, "duration")
     velocity_generator = ListGenerator(velocity_grammar_str, 8, "velocity")
 
-    song = Song(4, 1.5, pitch_generator, duration_generator, velocity_generator, True)
+    song = Song("ionic_upwards", 4, 1.5, pitch_generator, duration_generator, velocity_generator, True)
     song.make_bar_list()
     song.make_midi_file("testGGP2.mid")
 
