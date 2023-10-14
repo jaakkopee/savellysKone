@@ -1,6 +1,26 @@
-$S -> $jpts ajaa $kulkuväline
-$jpts -> Jaakko Juhani Prättälä
-$kulkuväline -> autoa | junalla | bussilla | polkupyörällä
+$S -> $säe1 $säe2 $säe3 $säe4
+$säe1 -> $sana1 $sana2 $sana3 $sana4
+$säe2 -> $sana5 $sana6 $sana7 $sana8
+$säe3 -> $sana9 $sana10 $sana11 $sana12
+$säe4 -> $sana13 $sana14 $sana15 $sana16
+$sana1 -> Kuu | Aurinko | Tähti | Planeetta | Komeetta | Galaksi | Avaruus | Aika | Universumi
+$sana2 -> on | oli | tulee olemaan | tullee olemaan | tulee olla | tullee olla | on ollut | oli ollut
+$sana3 -> kirkas kuin | kirkkaampi kuin
+$sana4 -> sieluni | sydämeni | mieleni | ajatukseni | tunteeni
+$sana5 -> ja | sekä | niin kuin
+$sana6 -> ne | ne kaikki | ne kaikki kauniit
+$sana7 -> kokemukset | tunteet | ajatukset | muistot | hetket | hetket kaikki
+$sana8 -> jotka olen kokenut, | jotka olen tuntenut, | jotka olen ajatellut, | jotka olen muistanut,
+$sana9 -> sekä | ja | niin kuin
+$sana10 -> ne | ne kaikki | ne kaikki kauniit
+$sana11 -> tyttöset | poikaset
+$sana12 -> rakastamani, | kuvittelemani, | ajattelemani, | muistelemani, | kokemani, | tuntemani,
+$sana13 -> niin sinutkin | niin minutkin | niin meidätkin | niin kaikki
+$sana14 -> kuolema korjaa | kuolema ottaa | kuolema vie | kuolema ottaa pois | kuolema korjaa pois | kuolema vie pois
+$sana15 -> ja vapauttaa | ja kadottaa | ja tuhoaa
+$sana16 -> kaiken olemasta | ruumiin
+
+
 
 
 
