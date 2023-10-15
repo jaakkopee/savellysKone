@@ -37,6 +37,6 @@ song.make_bar_list()
 song.modulate_duration_with_sin_phase_by_bar(3.0, 0.01)
 song.modulate_velocity_with_sin_phase_by_bar(3.0, 30.0)
 song.modulate_pitch_with_sin_phase_by_bar(3.0, 30.0)
-song.modulate_onset_with_sin_phase_by_bar(0.5, 1.0)
+song.modulate_onset_with_sin_phase_by_bar(1.0, 0.6)
 
 song.make_midi_file("sk3Test_modulators.mid")
