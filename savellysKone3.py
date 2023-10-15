@@ -250,10 +250,10 @@ class Song:
     def modulate_pitch_with_sin_phase_by_bar(self, freq, amp):
         for bar in self.bar_list:
             # Calculate the phase reset for each bar
-            phase_reset = bar.bar_onset * freq * 2 * math.pi
+            phase_reset = bar.bar_onset * freq
             for note in bar.note_list:
                 # Calculate the phase with phase reset at the onset of each bar
-                phase = note.onset * freq * 2 * math.pi + phase_reset
+                phase = note.onset * freq  + phase_reset
                 note.pitch += int(math.sin(phase) * amp)
                 if note.pitch < 0:
                     note.pitch = 0
@@ -266,10 +266,10 @@ class Song:
     def modulate_duration_with_sin_phase_by_bar(self, freq, amp):
         for bar in self.bar_list:
             # Calculate the phase reset for each bar
-            phase_reset = bar.bar_onset * freq * 2 * math.pi
+            phase_reset = bar.bar_onset * freq
             for note in bar.note_list:
                 # Calculate the phase with phase reset at the onset of each bar
-                phase = note.onset * freq * 2 * math.pi + phase_reset
+                phase = note.onset * freq + phase_reset
                 note.duration += math.sin(phase) * amp
                 if note.duration < 0:
                     note.duration = 0
@@ -280,10 +280,10 @@ class Song:
     def modulate_velocity_with_sin_phase_by_bar(self, freq, amp):
         for bar in self.bar_list:
             # Calculate the phase reset for each bar
-            phase_reset = bar.bar_onset * freq * 2 * math.pi
+            phase_reset = bar.bar_onset * freq
             for note in bar.note_list:
                 # Calculate the phase with phase reset at the onset of each bar
-                phase = note.onset * freq * 2 * math.pi + phase_reset
+                phase = note.onset * freq + phase_reset
                 note.velocity += int(math.sin(phase) * amp)
                 if note.velocity < 0:
                     note.velocity = 0
@@ -295,10 +295,10 @@ class Song:
     def modulate_onset_with_sin_phase_by_bar(self, freq, amp):
         for bar in self.bar_list:
             # Calculate the phase reset for each bar
-            phase_reset = bar.bar_onset * freq * 2 * math.pi
+            phase_reset = bar.bar_onset * freq
             for note in bar.note_list:
                 # Calculate the phase with phase reset at the onset of each bar
-                phase = note.onset * freq * 2 * math.pi + phase_reset
+                phase = note.onset * freq + phase_reset
                 note.onset += math.sin(phase) * amp
 
                 if note.onset < 0:
