@@ -9,7 +9,7 @@ $sana3 -> kirkas kuin | kirkkaampi kuin
 $sana4 -> sieluni | sydämeni | mieleni | ajatukseni | tunteeni
 $sana5 -> ja | sekä | niin kuin
 $sana6 -> ne | ne kaikki | ne kaikki kauniit
-$sana7 -> kokemukset | tunteet | ajatukset | muistot | hetket | hetket kaikki
+$sana7 -> kokemukset | tunteet | ajatukset | muistot | hetket
 $sana8 -> jotka olen kokenut, | jotka olen tuntenut, | jotka olen ajatellut, | jotka olen muistanut,
 $sana9 -> sekä | ja | niin kuin
 $sana10 -> ne | ne kaikki | ne kaikki kauniit
