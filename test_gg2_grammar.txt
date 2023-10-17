@@ -4,7 +4,7 @@ $säe2 -> $sana5 $sana6 $sana7 $sana8
 $säe3 -> $sana9 $sana10 $sana11 $sana12
 $säe4 -> $sana13 $sana14 $sana15 $sana16
 $sana1 -> Kuu | Aurinko | Tähti | Planeetta | Komeetta | Galaksi | Avaruus | Aika | Universumi
-$sana2 -> on | oli | tulee olemaan | tullee olemaan | tulee olla | tullee olla | on ollut | oli ollut
+$sana2 -> on | oli | tulee olemaan | tullee olemaan | on ollut | oli ollut
 $sana3 -> kirkas kuin | kirkkaampi kuin
 $sana4 -> sieluni | sydämeni | mieleni | ajatukseni | tunteeni
 $sana5 -> ja | sekä | niin kuin
