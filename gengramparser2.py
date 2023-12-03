@@ -1,6 +1,7 @@
 import random
 import sys
 
+DEBUG = True
 class GrammarRule:
     def __init__(self, lhs, rhs):
         self.lhs = lhs
@@ -36,6 +37,8 @@ def parse_grammar(f):
             alternatives = [alt.strip() for alt in alternatives]
             for alternative in alternatives:
                 grammar.add_rule(GrammarRule(lhs, alternative))
+    if DEBUG:
+        print(grammar)
     return grammar
 
 def generate_from_symbol(grammar, symbol):
