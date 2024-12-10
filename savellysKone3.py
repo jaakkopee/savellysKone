@@ -124,7 +124,6 @@ class Song:
         self.pitch_list = []
         self.duration_list = []
         self.velocity_list = []
-        self.generate_parameter_lists()
         self.generate_every_bar = generate_every_bar
 
     def generate_parameter_lists(self):
