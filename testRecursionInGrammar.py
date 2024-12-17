@@ -2,8 +2,7 @@ import savellysKone3 as sk3
 
 pitch_grammar = """
 $S -> $phrase0
-$phrase0 -> $recursivePhrase | 55 | 66 | 77
-$recursivePhrase -> $recursivePhrase | 110 | 220 | 440
+$phrase0 -> $phrase0 | 55 | 66 | 77
 """
 
 #grammar for duration
