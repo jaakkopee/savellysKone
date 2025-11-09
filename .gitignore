@@ -1,2 +1,4 @@
 *.mid
 *.pyc
+screenshot_*.png
+test_gui_screenshots.py
