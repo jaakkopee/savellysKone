@@ -1,2 +1,5 @@
 *.mid
 *.pyc
+__pycache__/
+*.ps
+.DS_Store
