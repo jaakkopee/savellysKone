@@ -5,9 +5,10 @@
 from midiutil import MIDIFile
 import random
 import math
-import musical_scales as ms
 import sys
 import gengramparser2 as ggp
+import tkinter as tk
+from tkinter import ttk, messagebox, filedialog
 
 
 class ListGenerator:
@@ -295,58 +296,309 @@ class Song:
                     note.onset = 0
         return
     
+
+
+class SavellysKoneGUI:
+    def __init__(self, root, test_mode=False):
+        self.root = root
+        self.root.title("Savellys Kone - Music Generator")
+        self.root.geometry("800x900")
+        
+        self.song = None
+        self.test_mode = test_mode  # Disable messageboxes in test mode
+        
+        # Create main container with scrollbar
+        main_frame = ttk.Frame(root, padding="10")
+        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        
+        # Configure grid weights
+        root.columnconfigure(0, weight=1)
+        root.rowconfigure(0, weight=1)
+        main_frame.columnconfigure(0, weight=1)
+        
+        row = 0
+        
+        # Song Parameters Section
+        ttk.Label(main_frame, text="Song Parameters", font=('Arial', 12, 'bold')).grid(row=row, column=0, sticky=tk.W, pady=(0, 5))
+        row += 1
+        
+        ttk.Label(main_frame, text="Song Name:").grid(row=row, column=0, sticky=tk.W)
+        self.name_var = tk.StringVar(value="generated_song")
+        ttk.Entry(main_frame, textvariable=self.name_var, width=40).grid(row=row, column=1, sticky=tk.W, padx=5)
+        row += 1
+        
+        ttk.Label(main_frame, text="Number of Bars:").grid(row=row, column=0, sticky=tk.W)
+        self.num_bars_var = tk.StringVar(value="4")
+        ttk.Entry(main_frame, textvariable=self.num_bars_var, width=20).grid(row=row, column=1, sticky=tk.W, padx=5)
+        row += 1
+        
+        ttk.Label(main_frame, text="IOI (Inter-Onset Interval):").grid(row=row, column=0, sticky=tk.W)
+        self.ioi_var = tk.StringVar(value="0.5")
+        ttk.Entry(main_frame, textvariable=self.ioi_var, width=20).grid(row=row, column=1, sticky=tk.W, padx=5)
+        row += 1
+        
+        # Grammar Section
+        ttk.Separator(main_frame, orient='horizontal').grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+        row += 1
+        
+        ttk.Label(main_frame, text="Grammars", font=('Arial', 12, 'bold')).grid(row=row, column=0, sticky=tk.W, pady=(0, 5))
+        row += 1
+        
+        # Pitch Grammar
+        ttk.Label(main_frame, text="Pitch Grammar:").grid(row=row, column=0, sticky=tk.W)
+        row += 1
+        self.pitch_grammar_text = tk.Text(main_frame, height=6, width=60)
+        self.pitch_grammar_text.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), padx=5)
+        self.pitch_grammar_text.insert('1.0', """$S -> $phrase0 $phrase0 $phrase0 $phrase0
+$phrase0 -> 60 62 64 65 67 69 71 72""")
+        row += 1
+        
+        # Duration Grammar
+        ttk.Label(main_frame, text="Duration Grammar:").grid(row=row, column=0, sticky=tk.W, pady=(10, 0))
+        row += 1
+        self.duration_grammar_text = tk.Text(main_frame, height=6, width=60)
+        self.duration_grammar_text.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), padx=5)
+        self.duration_grammar_text.insert('1.0', """$S -> $phrase0 $phrase0 $phrase0 $phrase0
+$phrase0 -> 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5""")
+        row += 1
+        
+        # Velocity Grammar
+        ttk.Label(main_frame, text="Velocity Grammar:").grid(row=row, column=0, sticky=tk.W, pady=(10, 0))
+        row += 1
+        self.velocity_grammar_text = tk.Text(main_frame, height=6, width=60)
+        self.velocity_grammar_text.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), padx=5)
+        self.velocity_grammar_text.insert('1.0', """$S -> $phrase0 $phrase0 $phrase0 $phrase0
+$phrase0 -> 100 100 100 100 100 100 100 100""")
+        row += 1
+        
+        # Generate Song Button
+        ttk.Button(main_frame, text="Generate Song", command=self.generate_song).grid(row=row, column=0, columnspan=2, pady=10)
+        row += 1
+        
+        # Modulation Section
+        ttk.Separator(main_frame, orient='horizontal').grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+        row += 1
+        
+        ttk.Label(main_frame, text="Modulation Functions", font=('Arial', 12, 'bold')).grid(row=row, column=0, sticky=tk.W, pady=(0, 5))
+        row += 1
+        
+        # Duration Modulation with Sin (FEATURED)
+        frame_dur = ttk.LabelFrame(main_frame, text="Duration Modulation with Sine Wave", padding="10")
+        frame_dur.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
+        row += 1
+        
+        ttk.Label(frame_dur, text="Frequency:").grid(row=0, column=0, sticky=tk.W)
+        self.dur_freq_var = tk.StringVar(value="1.0")
+        ttk.Entry(frame_dur, textvariable=self.dur_freq_var, width=15).grid(row=0, column=1, sticky=tk.W, padx=5)
+        
+        ttk.Label(frame_dur, text="Amplitude:").grid(row=0, column=2, sticky=tk.W, padx=(10, 0))
+        self.dur_amp_var = tk.StringVar(value="0.05")
+        ttk.Entry(frame_dur, textvariable=self.dur_amp_var, width=15).grid(row=0, column=3, sticky=tk.W, padx=5)
+        
+        ttk.Button(frame_dur, text="Apply Duration Modulation", command=self.apply_duration_modulation).grid(row=1, column=0, columnspan=4, pady=(10, 0))
+        
+        # Pitch Modulation with Sin
+        frame_pitch = ttk.LabelFrame(main_frame, text="Pitch Modulation with Sine Wave", padding="10")
+        frame_pitch.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
+        row += 1
+        
+        ttk.Label(frame_pitch, text="Frequency:").grid(row=0, column=0, sticky=tk.W)
+        self.pitch_freq_var = tk.StringVar(value="1.0")
+        ttk.Entry(frame_pitch, textvariable=self.pitch_freq_var, width=15).grid(row=0, column=1, sticky=tk.W, padx=5)
+        
+        ttk.Label(frame_pitch, text="Amplitude:").grid(row=0, column=2, sticky=tk.W, padx=(10, 0))
+        self.pitch_amp_var = tk.StringVar(value="10.0")
+        ttk.Entry(frame_pitch, textvariable=self.pitch_amp_var, width=15).grid(row=0, column=3, sticky=tk.W, padx=5)
+        
+        ttk.Button(frame_pitch, text="Apply Pitch Modulation", command=self.apply_pitch_modulation).grid(row=1, column=0, columnspan=4, pady=(10, 0))
+        
+        # Velocity Modulation with Sin
+        frame_vel = ttk.LabelFrame(main_frame, text="Velocity Modulation with Sine Wave", padding="10")
+        frame_vel.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
+        row += 1
+        
+        ttk.Label(frame_vel, text="Frequency:").grid(row=0, column=0, sticky=tk.W)
+        self.vel_freq_var = tk.StringVar(value="1.0")
+        ttk.Entry(frame_vel, textvariable=self.vel_freq_var, width=15).grid(row=0, column=1, sticky=tk.W, padx=5)
+        
+        ttk.Label(frame_vel, text="Amplitude:").grid(row=0, column=2, sticky=tk.W, padx=(10, 0))
+        self.vel_amp_var = tk.StringVar(value="10.0")
+        ttk.Entry(frame_vel, textvariable=self.vel_amp_var, width=15).grid(row=0, column=3, sticky=tk.W, padx=5)
+        
+        ttk.Button(frame_vel, text="Apply Velocity Modulation", command=self.apply_velocity_modulation).grid(row=1, column=0, columnspan=4, pady=(10, 0))
+        
+        # Onset Modulation with Sin
+        frame_onset = ttk.LabelFrame(main_frame, text="Onset Modulation with Sine Wave", padding="10")
+        frame_onset.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
+        row += 1
+        
+        ttk.Label(frame_onset, text="Frequency:").grid(row=0, column=0, sticky=tk.W)
+        self.onset_freq_var = tk.StringVar(value="1.0")
+        ttk.Entry(frame_onset, textvariable=self.onset_freq_var, width=15).grid(row=0, column=1, sticky=tk.W, padx=5)
+        
+        ttk.Label(frame_onset, text="Amplitude:").grid(row=0, column=2, sticky=tk.W, padx=(10, 0))
+        self.onset_amp_var = tk.StringVar(value="0.075")
+        ttk.Entry(frame_onset, textvariable=self.onset_amp_var, width=15).grid(row=0, column=3, sticky=tk.W, padx=5)
+        
+        ttk.Button(frame_onset, text="Apply Onset Modulation", command=self.apply_onset_modulation).grid(row=1, column=0, columnspan=4, pady=(10, 0))
+        
+        # Save Section
+        ttk.Separator(main_frame, orient='horizontal').grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+        row += 1
+        
+        ttk.Button(main_frame, text="Save MIDI File", command=self.save_midi).grid(row=row, column=0, columnspan=2, pady=10)
+        row += 1
+        
+        # Status Label
+        self.status_var = tk.StringVar(value="Ready. Click 'Generate Song' to start.")
+        ttk.Label(main_frame, textvariable=self.status_var, foreground="blue").grid(row=row, column=0, columnspan=2, pady=5)
+    
+    def generate_song(self):
+        try:
+            # Get parameters
+            name = self.name_var.get()
+            num_bars = int(self.num_bars_var.get())
+            ioi = float(self.ioi_var.get())
+            
+            # Get grammars
+            pitch_grammar = self.pitch_grammar_text.get('1.0', tk.END).strip()
+            duration_grammar = self.duration_grammar_text.get('1.0', tk.END).strip()
+            velocity_grammar = self.velocity_grammar_text.get('1.0', tk.END).strip()
+            
+            # Create generators
+            pitch_generator = ListGenerator(pitch_grammar, 8, "pitch")
+            duration_generator = ListGenerator(duration_grammar, 8, "duration")
+            velocity_generator = ListGenerator(velocity_grammar, 8, "velocity")
+            
+            # Create song
+            self.song = Song(
+                name=name,
+                num_bars=num_bars,
+                ioi=ioi,
+                pitch_generator=pitch_generator,
+                duration_generator=duration_generator,
+                velocity_generator=velocity_generator,
+                generate_every_bar=True
+            )
+            
+            self.song.generate_parameter_lists()
+            self.song.make_bar_list()
+            
+            self.status_var.set(f"Song '{name}' generated successfully with {num_bars} bars!")
+            if not self.test_mode:
+                messagebox.showinfo("Success", f"Song generated successfully!\nBars: {num_bars}\nIOI: {ioi}")
+            
+        except Exception as e:
+            self.status_var.set(f"Error: {str(e)}")
+            if not self.test_mode:
+                messagebox.showerror("Error", f"Failed to generate song:\n{str(e)}")
+    
+    def apply_duration_modulation(self):
+        if self.song is None:
+            if not self.test_mode:
+                messagebox.showwarning("Warning", "Please generate a song first!")
+            return
+        
+        try:
+            freq = float(self.dur_freq_var.get())
+            amp = float(self.dur_amp_var.get())
+            
+            self.song.modulate_duration_with_sin(freq, amp)
+            
+            self.status_var.set(f"Duration modulation applied (freq={freq}, amp={amp})")
+            if not self.test_mode:
+                messagebox.showinfo("Success", f"Duration modulation applied!\nFrequency: {freq}\nAmplitude: {amp}")
+            
+        except Exception as e:
+            self.status_var.set(f"Error: {str(e)}")
+            if not self.test_mode:
+                messagebox.showerror("Error", f"Failed to apply duration modulation:\n{str(e)}")
+    
+    def apply_pitch_modulation(self):
+        if self.song is None:
+            messagebox.showwarning("Warning", "Please generate a song first!")
+            return
+        
+        try:
+            freq = float(self.pitch_freq_var.get())
+            amp = float(self.pitch_amp_var.get())
+            
+            self.song.modulate_pitch_with_sin(freq, amp)
+            
+            self.status_var.set(f"Pitch modulation applied (freq={freq}, amp={amp})")
+            messagebox.showinfo("Success", f"Pitch modulation applied!\nFrequency: {freq}\nAmplitude: {amp}")
+            
+        except Exception as e:
+            self.status_var.set(f"Error: {str(e)}")
+            messagebox.showerror("Error", f"Failed to apply pitch modulation:\n{str(e)}")
+    
+    def apply_velocity_modulation(self):
+        if self.song is None:
+            messagebox.showwarning("Warning", "Please generate a song first!")
+            return
+        
+        try:
+            freq = float(self.vel_freq_var.get())
+            amp = float(self.vel_amp_var.get())
+            
+            self.song.modulate_velocity_with_sin(freq, amp)
+            
+            self.status_var.set(f"Velocity modulation applied (freq={freq}, amp={amp})")
+            messagebox.showinfo("Success", f"Velocity modulation applied!\nFrequency: {freq}\nAmplitude: {amp}")
+            
+        except Exception as e:
+            self.status_var.set(f"Error: {str(e)}")
+            messagebox.showerror("Error", f"Failed to apply velocity modulation:\n{str(e)}")
+    
+    def apply_onset_modulation(self):
+        if self.song is None:
+            messagebox.showwarning("Warning", "Please generate a song first!")
+            return
+        
+        try:
+            freq = float(self.onset_freq_var.get())
+            amp = float(self.onset_amp_var.get())
+            
+            self.song.modulate_onset_with_sin(freq, amp)
+            
+            self.status_var.set(f"Onset modulation applied (freq={freq}, amp={amp})")
+            messagebox.showinfo("Success", f"Onset modulation applied!\nFrequency: {freq}\nAmplitude: {amp}")
+            
+        except Exception as e:
+            self.status_var.set(f"Error: {str(e)}")
+            messagebox.showerror("Error", f"Failed to apply onset modulation:\n{str(e)}")
+    
+    def save_midi(self):
+        if self.song is None:
+            messagebox.showwarning("Warning", "Please generate a song first!")
+            return
+        
+        try:
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".mid",
+                filetypes=[("MIDI files", "*.mid"), ("All files", "*.*")],
+                initialfile=f"{self.song.name}.mid"
+            )
+            
+            if filename:
+                self.song.make_midi_file(filename)
+                self.status_var.set(f"MIDI file saved: {filename}")
+                messagebox.showinfo("Success", f"MIDI file saved successfully!\n{filename}")
+        
+        except Exception as e:
+            self.status_var.set(f"Error: {str(e)}")
+            messagebox.showerror("Error", f"Failed to save MIDI file:\n{str(e)}")
+
+
+def launch_gui():
+    """Launch the Tkinter GUI for Savellys Kone"""
+    root = tk.Tk()
+    app = SavellysKoneGUI(root)
+    root.mainloop()
     
     
 if __name__=="__main__":
-    
-    #generate a song
-    pitch_grammar_str = """
-    $S -> $phrase01 $phrase02 $phrase03 $phrase04
-    $phrase01 -> $note01 $note02 $note03 $note04
-    $phrase02 -> $note05 $note06 $note07 $note08
-    $phrase03 -> $note09 $note10 $note11 $note12
-    $phrase04 -> $note13 $note14 $note15 $note16
-    $note01 -> 60
-    $note02 -> 62
-    $note03 -> 64
-    $note04 -> 65
-    $note05 -> 67
-    $note06 -> 69
-    $note07 -> 71
-    $note08 -> 72
-    $note09 -> 74
-    $note10 -> 76
-    $note11 -> 77
-    $note12 -> 79
-    $note13 -> 81
-    $note14 -> 83
-    $note15 -> 84
-    $note16 -> 86
-    """
+    # Launch GUI by default
+    launch_gui()
 
-    duration_grammar_str = """
-    $S -> $phrase01 $phrase01 $phrase01 $phrase01
-    $phrase01 -> $duration01 $duration02 $duration03 $duration04
-    $duration01 -> 0.6
-    $duration02 -> 0.8
-    $duration03 -> 1.0
-    $duration04 -> 1.2
-    """
-
-    velocity_grammar_str = """
-    $S -> $phrase01 $phrase01 $phrase01 $phrase01
-    $phrase01 -> $velocity01 $velocity02 $velocity03 $velocity04
-    $velocity01 -> 100
-    $velocity02 -> 110
-    $velocity03 -> 120
-    $velocity04 -> 127
-    """
-
-    pitch_generator = ListGenerator(pitch_grammar_str, 8, "pitch")
-    duration_generator = ListGenerator(duration_grammar_str, 8, "duration")
-    velocity_generator = ListGenerator(velocity_grammar_str, 8, "velocity")
-
-    song = Song(name="ionic_upwards", num_bars=4, ioi=1.5, pitch_generator=pitch_generator, duration_generator=duration_generator, velocity_generator=velocity_generator, generate_every_bar=True)
-    song.make_bar_list()
-    song.make_midi_file("testGGP2.mid")
 
