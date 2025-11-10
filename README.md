@@ -20,6 +20,35 @@ pip install midiutil
 python3 savellysKone3_gui.py
 ```
 
+## Audio Playback with SimpleSampler
+
+The GUI includes a **Play MIDI** button that plays compositions using SimpleSampler, a C++ sine wave synthesizer.
+
+### Building SimpleSampler
+
+To enable audio playback in the GUI:
+
+```bash
+# 1. Install dependencies (macOS)
+brew install cmake sfml
+
+# 2. Navigate to SimpleSampler directory
+cd simpleSampler/build
+
+# 3. Generate build files
+cmake ..
+
+# 4. Build the executable
+make
+
+# 5. Verify the build
+ls SimpleSampler
+```
+
+Once built, the **▶️ Play MIDI** and **⏹️ Stop** buttons will appear in the Piano Roll tab.
+
+For more details, see [simpleSampler/README.md](simpleSampler/README.md)
+
 ## GUI Overview
 
 The `savellysKone3_gui.py` application provides four main tabs:
@@ -154,6 +183,7 @@ Eight modulation functions:
 
 ## Requirements
 
+### Python Requirements
 - Python 3.x
 - midiutil (`pip install midiutil`)
 - tkinter (for GUI, usually included with Python)
@@ -162,6 +192,11 @@ Optional:
 - musical-scales (for scale utilities)
 - PIL/Pillow (for screenshots)
 
+### SimpleSampler Requirements (for audio playback)
+- CMake (`brew install cmake`)
+- SFML (`brew install sfml`)
+- C++ compiler (Xcode Command Line Tools on macOS)
+
 ## Installation
 
 ```bash
@@ -169,8 +204,14 @@ Optional:
 git clone https://github.com/jaakkopee/savellysKone.git
 cd savellysKone
 
-# Install dependencies
+# Install Python dependencies
 pip install midiutil
+
+# (Optional) Build SimpleSampler for audio playback
+cd simpleSampler/build
+cmake ..
+make
+cd ../..
 
 # Run the GUI
 python3 savellysKone3_gui.py
