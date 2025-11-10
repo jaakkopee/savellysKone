@@ -800,7 +800,7 @@ $vel08 -> 110"""
             return
         
         self.bar_display.delete('1.0', 'end')
-        self.bar_display.insert('1.0', f"Bar Information:\n")
+        self.bar_display.insert('end', f"Bar Information:\n")
         self.bar_display.insert('end', f"Onset: {self.current_bar.bar_onset}\n")
         self.bar_display.insert('end', f"IOI: {self.current_bar.ioi}\n")
         self.bar_display.insert('end', f"Number of notes: {len(self.current_bar.note_list)}\n\n")
@@ -813,6 +813,31 @@ $vel08 -> 110"""
             self.bar_display.insert('end', 
                 f"{i:<8}{note.pitch:<10}{note.onset:<15.2f}{note.duration:<15.2f}{note.velocity:<10}\n")
     
+    def update_song_from_bar(self):
+        """Update the current song with the modified bar and refresh input lists"""
+        if self.current_bar is not None:
+            # Extract current values from the bar's note list
+            pitch_list = [note.pitch for note in self.current_bar.note_list]
+            duration_list = [note.duration for note in self.current_bar.note_list]
+            velocity_list = [note.velocity for note in self.current_bar.note_list]
+            
+            # Update the bar's own lists to stay synchronized
+            self.current_bar.pitch_list = pitch_list
+            self.current_bar.duration_list = duration_list
+            self.current_bar.velocity_list = velocity_list
+            
+            # Update the input fields
+            self.pitch_list_var.set(','.join(map(str, pitch_list)))
+            self.duration_list_var.set(','.join(str(d) for d in duration_list))
+            self.velocity_list_var.set(','.join(map(str, velocity_list)))
+            
+            # Update the song if it exists
+            if self.current_song is not None:
+                self.current_song.bar_list[0] = self.current_bar
+                # Update piano roll if it's visible
+                if hasattr(self, 'piano_canvas'):
+                    self.update_piano_roll()
+    
     def transpose_bar(self):
         """Transpose the current bar"""
         if self.current_bar is None:
@@ -822,6 +847,7 @@ $vel08 -> 110"""
         try:
             semitones = int(self.transpose_var.get())
             self.current_bar.transpose_note_list(semitones)
+            self.update_song_from_bar()  # Update song if it exists
             self.display_bar()
             messagebox.showinfo("Success", f"Bar transposed by {semitones} semitones!")
         except ValueError:
@@ -838,6 +864,7 @@ $vel08 -> 110"""
         try:
             duration = float(self.set_duration_var.get())
             self.current_bar.set_note_list_durations(duration)
+            self.update_song_from_bar()  # Update song if it exists
             self.display_bar()
             messagebox.showinfo("Success", f"Duration set to {duration} for all notes!")
         except ValueError:
@@ -853,6 +880,7 @@ $vel08 -> 110"""
         
         try:
             self.current_bar.reverse_note_list()
+            self.update_song_from_bar()  # Update song if it exists
             self.display_bar()
             messagebox.showinfo("Success", "Note list reversed!")
         except Exception as e:
@@ -866,6 +894,7 @@ $vel08 -> 110"""
         
         try:
             self.current_bar.random_pitch()
+            self.update_song_from_bar()  # Update song if it exists
             self.display_bar()
             messagebox.showinfo("Success", "Random pitch variations applied!")
         except Exception as e:
@@ -879,6 +908,7 @@ $vel08 -> 110"""
         
         try:
             self.current_bar.random_duration()
+            self.update_song_from_bar()  # Update song if it exists
             self.display_bar()
             messagebox.showinfo("Success", "Random duration variations applied!")
         except Exception as e:
@@ -892,6 +922,7 @@ $vel08 -> 110"""
         
         try:
             self.current_bar.random_velocity()
+            self.update_song_from_bar()  # Update song if it exists
             self.display_bar()
             messagebox.showinfo("Success", "Random velocity variations applied!")
         except Exception as e:
@@ -905,6 +936,7 @@ $vel08 -> 110"""
         
         try:
             self.current_bar.random_onset()
+            self.update_song_from_bar()  # Update song if it exists
             self.display_bar()
             messagebox.showinfo("Success", "Random onset variations applied!")
         except Exception as e:
