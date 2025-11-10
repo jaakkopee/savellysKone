@@ -309,7 +309,7 @@ class SavellysKoneGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("SavellysKone3 GUI")
-        self.root.geometry("900x700")
+        self.root.geometry("1125x700")  # 25% wider: 900 * 1.25 = 1125
         
         # Variables to store generators and bar
         self.list_generator = None
