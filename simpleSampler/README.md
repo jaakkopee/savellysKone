@@ -39,11 +39,21 @@ Download SFML from [https://www.sfml-dev.org/download.php](https://www.sfml-dev.
 
 ```bash
 cd simpleSampler
-mkdir build
+mkdir -p build
 cd build
 cmake ..
 make
 ```
+
+### Quick Check
+
+Verify the build and integration setup:
+
+```bash
+python3 check_integration.py
+```
+
+This will check if SimpleSampler is built and ready for GUI integration.
 
 ## Usage
 
@@ -56,6 +66,34 @@ Or run without arguments to be prompted for a file path:
 ```bash
 ./SimpleSampler
 ```
+
+### Integration with savellysKone3_gui
+
+SimpleSampler can be integrated into the Python GUI for real-time playback:
+
+```python
+from sampler_player import SimpleSamplerPlayer
+
+# Initialize player
+player = SimpleSamplerPlayer()
+
+# Play a Song object directly
+temp_path, process = player.play_from_song(song, background=True)
+
+# Or play a MIDI file
+player.play_midi_file("myfile.mid")
+```
+
+See [GUI_INTEGRATION.md](GUI_INTEGRATION.md) for complete integration instructions.
+
+### Example Script
+
+```bash
+# Run the example integration demo
+python3 example_integration.py
+```
+
+This creates a savellysKone3 composition and plays it through SimpleSampler.
 
 ## Project Structure
 

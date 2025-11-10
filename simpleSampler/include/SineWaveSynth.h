@@ -16,12 +16,17 @@ public:
     
     double getSample(double currentTime, uint32_t sampleRate);
     
+    uint8_t getMidiNote() const { return midiNote; }
+    
 private:
     uint8_t midiNote;
     uint8_t velocity;
     double frequency;
     double phase;
+    double noteStartTime;
+    double noteOffTime;
     bool active;
+    bool noteIsOn;
     Envelope envelope;
     
     double midiNoteToFrequency(uint8_t note);

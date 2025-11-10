@@ -34,6 +34,8 @@ int main(int argc, char* argv[]) {
     
     engine.start();
     
+    std::cout << "Audio stream started, playing..." << std::endl;
+    
     // Keep playing until user interrupts
     while (engine.isPlaying()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));

@@ -162,8 +162,15 @@ class Song:
         return
     
     def make_midi_file(self, filename):
-        midi_file = MIDIFile(1)
+        # Create MIDI file with 1 track, format 0 (single track)
+        # Setting numTracks=1 but using removeDuplicates and deinterleave to ensure clean output
+        midi_file = MIDIFile(numTracks=1, removeDuplicates=True, deinterleave=False, 
+                            adjust_origin=False, file_format=0)
+        # Add tempo to track 0
+        midi_file.addTempo(0, 0, 120)
+        # Add track name
         midi_file.addTrackName(0, 0, self.name)
+        # Add notes to track 0, channel 0
         for bar in self.bar_list:
             for note in bar.note_list:
                 midi_file.addNote(0, 0, note.pitch, note.onset, note.duration, note.velocity)

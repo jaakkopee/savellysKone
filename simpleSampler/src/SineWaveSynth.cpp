@@ -4,7 +4,8 @@
 
 // Voice implementation
 Voice::Voice()
-    : midiNote(0), velocity(0), frequency(440.0), phase(0.0), active(false)
+    : midiNote(0), velocity(0), frequency(440.0), phase(0.0), 
+      noteStartTime(0.0), noteOffTime(0.0), active(false), noteIsOn(false)
 {
 }
 
@@ -13,12 +14,17 @@ void Voice::noteOn(uint8_t note, uint8_t vel, double currentTime) {
     velocity = vel;
     frequency = midiNoteToFrequency(note);
     phase = 0.0;
+    noteStartTime = currentTime;
+    noteOffTime = -1.0;
     active = true;
+    noteIsOn = true;
     envelope.reset();
     envelope.noteOn();
 }
 
 void Voice::noteOff(double currentTime) {
+    noteOffTime = currentTime;
+    noteIsOn = false;
     envelope.noteOff();
 }
 
@@ -27,10 +33,15 @@ bool Voice::isActive() const {
 }
 
 double Voice::getSample(double currentTime, uint32_t sampleRate) {
-    if (!isActive()) {
-        active = false;
+    if (!active) {
         return 0.0;
     }
+    
+    // Calculate time since note started
+    double timeSinceNoteOn = currentTime - noteStartTime;
+    
+    // Calculate envelope time (time since note off if released, otherwise time since note on)
+    double envelopeTime = noteIsOn ? timeSinceNoteOn : (currentTime - noteOffTime);
     
     // Generate sine wave
     double sample = std::sin(phase * 2.0 * M_PI);
@@ -42,12 +53,18 @@ double Voice::getSample(double currentTime, uint32_t sampleRate) {
     }
     
     // Apply envelope
-    double envValue = envelope.getAmplitude(currentTime);
+    double envValue = envelope.getAmplitude(noteIsOn ? timeSinceNoteOn : envelopeTime);
+    
+    // Check if envelope is done
+    if (!envelope.isActive()) {
+        active = false;
+        return 0.0;
+    }
     
     // Apply velocity scaling (velocity 0-127 maps to 0.0-1.0)
     double velocityScale = velocity / 127.0;
     
-    return sample * envValue * velocityScale * 0.3; // 0.3 to prevent clipping with multiple voices
+    return sample * envValue * velocityScale * 0.2; // Reduced gain to prevent distortion with polyphony
 }
 
 double Voice::midiNoteToFrequency(uint8_t note) {
@@ -111,9 +128,7 @@ Voice* SineWaveSynth::findFreeVoice() {
 
 Voice* SineWaveSynth::findVoiceWithNote(uint8_t midiNote) {
     for (auto& voice : voices) {
-        if (voice->isActive()) {
-            // Note: We need to expose midiNote in Voice or track it differently
-            // For now, turn off the first active voice
+        if (voice->isActive() && voice->getMidiNote() == midiNote) {
             return voice.get();
         }
     }

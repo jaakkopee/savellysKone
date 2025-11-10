@@ -15,6 +15,8 @@ import savellysKone3 as sk3
 import midi_parser
 import os
 import tempfile
+import sys
+import subprocess
 
 
 class PianoRollDisplay(tk.Canvas):
@@ -319,6 +321,10 @@ class SavellysKoneGUI:
         self.generated_pitch_list = None
         self.generated_duration_list = None
         self.generated_velocity_list = None
+        
+        # Variables for playback
+        self.sampler_process = None
+        self.temp_midi_path = None
         
         # Create menu bar
         self.create_menu_bar()
@@ -1538,6 +1544,130 @@ $vel08 -> 110"""
             self.validation_detail_text.insert('1.0', f"Error during validation:\n{str(e)}")
             return False
     
+    def play_current_song(self):
+        """Play the current song using SimpleSampler"""
+        if self.current_song is None:
+            messagebox.showwarning("Warning", "Please create a song first!\n\n"
+                                 "Use the Bar Manipulation tab to create a bar,\n"
+                                 "or use the List Generator to generate grammars.")
+            return
+        
+        try:
+            # Path to SimpleSampler
+            sampler_path = os.path.join(os.path.dirname(__file__), 
+                                       'simpleSampler', 'build', 'SimpleSampler')
+            
+            # Check if SimpleSampler exists
+            if not os.path.isfile(sampler_path):
+                messagebox.showerror("SimpleSampler Not Found", 
+                                   f"SimpleSampler executable not found at:\n"
+                                   f"{sampler_path}\n\n"
+                                   f"Please build SimpleSampler:\n"
+                                   f"cd simpleSampler/build\n"
+                                   f"cmake ..\n"
+                                   f"make")
+                return
+            
+            # Create a temporary MIDI file
+            temp_fd, temp_path = tempfile.mkstemp(suffix='.mid', prefix='sk3_play_')
+            os.close(temp_fd)
+            
+            # Export song to temp MIDI file
+            print(f"Creating temporary MIDI file: {temp_path}")
+            self.current_song.make_midi_file(temp_path)
+            print(f"MIDI file created, size: {os.path.getsize(temp_path)} bytes")
+            
+            # Build command string
+            command = f"{sampler_path} {temp_path}"
+            print(f"Executing: {command}")
+            
+            # Execute SimpleSampler in background
+            import subprocess
+            process = subprocess.Popen(command, shell=True, 
+                                      stdout=subprocess.PIPE, 
+                                      stderr=subprocess.PIPE)
+            
+            # Store for cleanup
+            self.temp_midi_path = temp_path
+            self.sampler_process = process
+            
+            self.update_status(f"Playing MIDI file with SimpleSampler...")
+            messagebox.showinfo("Playing", 
+                              f"Playing song through SimpleSampler!\n\n"
+                              f"Command: {os.path.basename(sampler_path)} {os.path.basename(temp_path)}")
+            
+        except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            print(f"ERROR playing MIDI:\n{error_details}")
+            messagebox.showerror("Error", f"Error playing MIDI:\n\n{str(e)}\n\nCheck console for details.")
+    
+    def stop_playback(self):
+        """Stop the currently playing MIDI"""
+        try:
+            if hasattr(self, 'sampler_process') and self.sampler_process:
+                if self.sampler_process.poll() is None:  # Process is still running
+                    self.sampler_process.terminate()
+                    try:
+                        self.sampler_process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        self.sampler_process.kill()
+                    print("SimpleSampler process stopped")
+                    self.update_status("Playback stopped")
+                else:
+                    self.update_status("Nothing is playing")
+                
+                # Clean up temp file if it exists
+                if hasattr(self, 'temp_midi_path') and os.path.exists(self.temp_midi_path):
+                    try:
+                        os.unlink(self.temp_midi_path)
+                        print(f"Cleaned up temp file: {self.temp_midi_path}")
+                    except:
+                        pass
+            else:
+                self.update_status("Nothing is playing")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error stopping playback: {str(e)}")
+    
+    def show_sampler_instructions(self):
+        """Show instructions for building SimpleSampler"""
+        instructions = """SimpleSampler - Audio Playback Setup
+
+SimpleSampler is a C++ MIDI player that uses sine wave synthesis.
+To enable the Play MIDI button, you need to build it first.
+
+Build Instructions:
+-------------------
+
+1. Open Terminal and navigate to the project directory:
+   cd {project_dir}
+
+2. Navigate to the SimpleSampler build directory:
+   cd simpleSampler/build
+
+3. Run CMake to generate build files:
+   cmake ..
+
+4. Build the executable:
+   make
+
+5. Verify the build:
+   ls SimpleSampler
+
+The Play MIDI button will appear automatically once SimpleSampler 
+is built successfully.
+
+Requirements:
+-------------
+- CMake (install with: brew install cmake)
+- SFML (install with: brew install sfml)
+- C++ compiler (Xcode Command Line Tools)
+
+For more details, see: simpleSampler/README.md
+""".format(project_dir=os.path.dirname(os.path.abspath(__file__)))
+        
+        messagebox.showinfo("SimpleSampler Build Instructions", instructions)
+    
     def create_piano_roll_tab(self):
         """Create the Piano Roll Visualization tab"""
         tab = ttk.Frame(self.notebook)
@@ -1564,6 +1694,24 @@ $vel08 -> 110"""
         # MIDI Export button
         ttk.Button(button_frame, text="💾 Save Song as MIDI", 
                    command=self.export_song_to_midi).pack(side='left', padx=5)
+        
+        # Play MIDI button - check if SimpleSampler exists
+        sampler_path = os.path.join(os.path.dirname(__file__), 
+                                   'simpleSampler', 'build', 'SimpleSampler')
+        if os.path.isfile(sampler_path):
+            ttk.Button(button_frame, text="▶️ Play MIDI", 
+                       command=self.play_current_song).pack(side='left', padx=5)
+            ttk.Button(button_frame, text="⏹️ Stop", 
+                       command=self.stop_playback).pack(side='left', padx=5)
+        else:
+            # Show message when SimpleSampler is not available
+            sampler_status = ttk.Label(button_frame, 
+                                      text="⚠️ SimpleSampler not available", 
+                                      foreground='orange')
+            sampler_status.pack(side='left', padx=5)
+            # Add clickable link/button to show build instructions
+            ttk.Button(button_frame, text="ℹ️ Build Instructions", 
+                       command=self.show_sampler_instructions).pack(side='left', padx=5)
         
         # Note range controls
         range_frame = ttk.Frame(control_frame)

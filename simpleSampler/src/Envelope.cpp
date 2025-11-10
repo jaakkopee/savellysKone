@@ -41,10 +41,17 @@ void Envelope::noteOn() {
 
 void Envelope::noteOff() {
     if (currentStage != Stage::Idle && currentStage != Stage::Release) {
+        // Capture current amplitude at the moment of note off
+        double currentAmplitude = 0.0;
+        if (currentStage == Stage::Sustain) {
+            currentAmplitude = sustainLevel;
+        } else {
+            currentAmplitude = getAmplitude(0.0); // Get current amplitude
+        }
+        
         currentStage = Stage::Release;
-        noteOffTime = 0.0;
-        // Capture current amplitude for smooth release
-        releaseStartAmplitude = getAmplitude(0.0);
+        stageStartTime = 0.0; // Reset for release timing
+        releaseStartAmplitude = currentAmplitude;
     }
 }
 
