@@ -1,0 +1,7 @@
+/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles/SimpleSampler.dir
+/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles/edit_cache.dir
+/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles/rebuild_cache.dir
+/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles/list_install_components.dir
+/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles/install.dir
+/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles/install/local.dir
+/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles/install/strip.dir
