@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+"""
+Manual test for recursion prevention in GUI.
+
+To test:
+1. Run: python3 savellysKone3_gui.py
+2. Go to List Generator tab -> Pitch Grammar
+3. Replace the grammar with: $S -> $S
+4. Click "Generate"
+5. You should see an error message:
+   "Invalid parameter value: Infinite recursion detected: '$S -> $S'. 
+    The non-terminal '$S' cannot appear as the first symbol on the right side of its own rule."
+
+Other test cases:
+- $S -> $S $A (with $A -> 60) - should reject
+- $S -> 60 | $S - should reject
+- $S -> $A $S | $A (with $A -> 60) - should accept (right recursion is OK)
+"""
+
+print("=" * 70)
+print("MANUAL TEST INSTRUCTIONS FOR RECURSION PREVENTION")
+print("=" * 70)
+print()
+print("1. Run the GUI:")
+print("   python3 savellysKone3_gui.py")
+print()
+print("2. Go to 'List Generator' tab")
+print()
+print("3. Test Case 1: Direct self-reference")
+print("   In the Pitch Grammar tab, replace grammar with:")
+print("   $S -> $S")
+print("   Click 'Generate'")
+print("   Expected: Error dialog showing recursion detection message")
+print()
+print("4. Test Case 2: Self-reference with another symbol")
+print("   Replace grammar with:")
+print("   $S -> $S $A")
+print("   $A -> 60")
+print("   Click 'Generate'")
+print("   Expected: Error dialog showing recursion detection message")
+print()
+print("5. Test Case 3: Self-reference in alternative")
+print("   Replace grammar with:")
+print("   $S -> 60 | $S")
+print("   Click 'Generate'")
+print("   Expected: Error dialog showing recursion detection message")
+print()
+print("6. Test Case 4: Valid right recursion (should work)")
+print("   Replace grammar with:")
+print("   $S -> $A $S | $A")
+print("   $A -> 60 62")
+print("   Click 'Generate'")
+print("   Expected: Success! List generated")
+print()
+print("=" * 70)
+print()
+print("The recursion prevention is now active in gengramparser2.py")
+print("It prevents rules like '$S -> $S' which would cause infinite loops.")
+print()

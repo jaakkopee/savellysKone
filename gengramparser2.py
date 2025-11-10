@@ -1,7 +1,7 @@
 import random
 import sys
 
-DEBUG = True
+DEBUG = False
 class GrammarRule:
     def __init__(self, lhs, rhs):
         self.lhs = lhs
@@ -36,6 +36,11 @@ def parse_grammar(f):
             alternatives = rhs_alternatives.split("|")
             alternatives = [alt.strip() for alt in alternatives]
             for alternative in alternatives:
+                # Check for direct left recursion: LHS cannot be the first symbol on RHS
+                rhs_first_symbol = alternative.split()[0] if alternative.split() else ""
+                if rhs_first_symbol == lhs:
+                    raise ValueError(f"Infinite recursion detected: '{lhs} -> {alternative}'. "
+                                   f"The non-terminal '{lhs}' cannot appear as the first symbol on the right side of its own rule.")
                 grammar.add_rule(GrammarRule(lhs, alternative))
     if DEBUG:
         print(grammar)

@@ -242,8 +242,41 @@ Bottom status bar displays:
 The grammar parser supports:
 - Non-terminal symbols (prefixed with `$`)
 - Terminal symbols (numbers for pitch/velocity, decimals for duration)
-- Recursive rules
-- Multiple expansions per rule
+- Recursive rules (right recursion recommended)
+- Multiple expansions per rule (using `|` separator)
+
+**Important Grammar Rules**:
+- **Left recursion is not allowed**: Rules like `$S -> $S` or `$S -> $S $A` will be rejected
+- This prevents infinite recursion and ensures grammar terminates
+- Use right recursion instead: `$S -> $A $S | $A` is valid
+- Error message will clearly indicate the problematic rule if detected
+
+**Valid Grammar Examples**:
+```
+# Simple expansion
+$S -> 60 62 64 65
+
+# Multiple alternatives
+$S -> $A | $B
+$A -> 60 62
+$B -> 64 65
+
+# Right recursion (OK)
+$S -> $A $S | $A
+$A -> 60 62
+```
+
+**Invalid Grammar Examples** (will be rejected):
+```
+# Direct left recursion
+$S -> $S           # Error: cannot reference itself as first symbol
+
+# Left recursion with other symbols
+$S -> $S $A        # Error: $S is first symbol on right side
+
+# Left recursion in alternative
+$S -> 60 | $S      # Error: one alternative has left recursion
+```
 
 ### MIDI Validation
 

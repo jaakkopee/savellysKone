@@ -1,8 +1,10 @@
 import savellysKone3 as sk3
 
+# Updated: This grammar previously had left recursion ($phrase0 -> $phrase0 ...)
+# which would cause infinite loops. Changed to valid right recursion.
 pitch_grammar = """
 $S -> $phrase0
-$phrase0 -> $phrase0 | 55 | 66 | 77
+$phrase0 -> 55 $phrase0 | 66 $phrase0 | 77 $phrase0 | 55 | 66 | 77
 """
 
 #grammar for duration
