@@ -1,69 +1,198 @@
-# Usage Example
+# SimpleSampler Usage Guide
 
-The SimpleSampler has been successfully built! The executable is located at:
+## Overview
+SimpleSampler is a MIDI file player with two synthesis modes:
+1. **Sine Wave Mode** - Simple sine wave synthesis with ADSR envelope
+2. **SoundFont Mode** - High-quality piano sound using the Motif ES6 Concert Piano SoundFont
 
+## Command Line Usage
+
+### Sine Wave Mode (Default)
+```bash
+./SimpleSampler path/to/file.mid
 ```
-build/SimpleSampler
+
+### SoundFont Mode (Piano Sound)
+```bash
+./SimpleSampler path/to/file.mid --soundfont
+# or
+./SimpleSampler path/to/file.mid -sf
 ```
 
-## Running the Sampler
+## Python Wrapper Usage
 
-### Option 1: With command-line argument
+### Basic Usage
+
+```python
+from sampler_player import SimpleSamplerPlayer
+
+# Create player with sine waves
+player = SimpleSamplerPlayer()
+player.play_midi_file("song.mid", background=True)
+
+# Create player with SoundFont
+player = SimpleSamplerPlayer(use_soundfont=True)
+player.play_midi_file("song.mid", background=True)
+
+# Stop playback
+player.stop()
+```
+
+### With savellysKone3
+
+```python
+import savellysKone3 as sk3
+from sampler_player import play_song
+
+# Create a song
+pitch_grammar = "$S -> 60 62 64 65 67 69 71 72"
+pitch_gen = sk3.ListGenerator(pitch_grammar, 8, "pitch")
+song = sk3.Song(pitch_generator=pitch_gen, num_bars=4, ioi=0.5)
+song.make_bar_list()
+
+# Play with sine waves
+temp_path, player = play_song(song, use_soundfont=False)
+
+# Or play with piano sound
+temp_path, player = play_song(song, use_soundfont=True)
+
+# Clean up when done
+import os
+os.unlink(temp_path)
+```
+
+## Synthesis Modes
+
+### Sine Wave Mode
+- **Pros**: Lightweight, no dependencies beyond SFML
+- **Cons**: Simple sound, less realistic
+- **Best for**: Testing, debugging, minimal audio footprint
+- **Settings**:
+  - Polyphony: 32 voices
+  - ADSR Envelope:
+    - Attack: 10ms
+    - Decay: 100ms
+    - Sustain: 70%
+    - Release: 200ms
+  - Gain: 20% (to prevent clipping with multiple voices)
+
+### SoundFont Mode
+- **Pros**: High-quality piano sound, realistic
+- **Cons**: Requires FluidSynth library and SF2 file (~12MB)
+- **Best for**: Production, presentations, realistic playback
+- **Settings**:
+  - Polyphony: 32 voices
+  - Sample Rate: 44100 Hz
+  - SoundFont: Motif ES6 Concert Piano (included)
+
+## SoundFont Location
+
+The SoundFont file should be located at:
+```
+simpleSampler/build/soundfonts/Motif ES6 Concert Piano(12Mb).SF2
+```
+
+Or:
+```
+simpleSampler/soundfonts/Motif ES6 Concert Piano(12Mb).SF2
+```
+
+SimpleSampler will check both locations.
+
+## Interactive Mode
+
+If you run SimpleSampler without arguments, it will prompt you:
 
 ```bash
-cd build
-./SimpleSampler path/to/your/midi/file.mid
-```
-
-### Option 2: Interactive mode
-
-```bash
-cd build
 ./SimpleSampler
+
+# Prompts:
+# Enter MIDI file path: [enter path]
+# Use SoundFont? (y/n): [y or n]
 ```
 
-Then enter the path to your MIDI file when prompted.
+## Requirements
 
-## Testing with Python-Generated MIDI
+### For Sine Wave Mode
+- SFML 3.0+ (Audio and System modules)
+- C++17 compiler
 
-Since you have Python MIDI generation scripts in the parent directory (savellysKone3.py), you can:
+### For SoundFont Mode
+- All of the above, plus:
+- FluidSynth 2.5+
+- SoundFont file (.SF2)
 
-1. Generate a MIDI file using your Python scripts:
+Install FluidSynth on macOS:
 ```bash
-cd ..
-python3 savellysKone3.py  # or any other script that generates .mid files
+brew install fluidsynth
 ```
 
-2. Play it with SimpleSampler:
+## Building
+
 ```bash
-cd simpleSampler/build
-./SimpleSampler ../path_to_generated_file.mid
+cd simpleSampler
+mkdir -p build
+cd build
+cmake ..
+make
 ```
 
-## Features in Action
+## Integration with savellysKone3_gui
 
-The sampler will:
-- Parse your MIDI file and extract all note events
-- Play each note using pure sine wave synthesis
-- Apply a gentle ADSR envelope to each note:
-  - **Attack**: Quick 10ms fade-in
-  - **Decay**: 100ms transition to sustain level
-  - **Sustain**: Held at 70% amplitude
-  - **Release**: Smooth 200ms fade-out
-- Respect note velocities (louder/softer notes)
-- Support up to 32 simultaneous voices (polyphony)
+Add a toggle or dropdown in your GUI to let users choose synthesis mode:
 
-## What You'll Hear
+```python
+# In your GUI code
+from sampler_player import SimpleSamplerPlayer
 
-The output is intentionally simple - pure sine waves give a clean, electronic sound similar to early synthesizers. The ADSR envelope prevents clicks and creates smooth note transitions.
+class YourGUI:
+    def __init__(self):
+        self.player = SimpleSamplerPlayer()
+        self.use_soundfont = False  # Toggle this based on UI control
+        
+    def on_synth_mode_changed(self, use_soundfont):
+        """Called when user changes synthesis mode"""
+        self.use_soundfont = use_soundfont
+        self.player = SimpleSamplerPlayer(use_soundfont=use_soundfont)
+    
+    def play_current_song(self):
+        """Play the current song with selected synthesis mode"""
+        temp_path, _ = self.player.play_from_song(self.current_song)
+        # Store temp_path to clean up later
+        self.temp_midi_file = temp_path
+```
 
-## Tips
+## Troubleshooting
 
-- For best results, use MIDI files with clear melodic content
-- The sampler works with any standard MIDI file format 0 or 1
-- Press Ctrl+C to stop playback at any time
-- Playback timing is displayed in real-time
+### No Sound
+1. Check system volume is not muted
+2. Verify correct audio output device is selected
+3. For SoundFont mode, ensure FluidSynth is installed: `brew list fluidsynth`
 
-## Next Steps
+### SoundFont Not Found
+1. Check that the SF2 file exists in `build/soundfonts/` or `soundfonts/`
+2. Verify the filename matches exactly (including spaces)
+3. SimpleSampler will fall back to sine wave mode if SoundFont loading fails
 
-Try generating MIDI with your Python tools and playing it with this sampler to hear your programmatic compositions!
+### FluidSynth Warning
+If you see: `fluidsynth: warning: No preset found on channel 9`
+- This is normal - channel 9 is typically for drums in MIDI
+- Piano notes will still play correctly
+
+## Performance
+
+- Both modes support 32-voice polyphony
+- Sample rate: 44100 Hz
+- Buffer size: 4096 samples
+- Latency: ~93ms (acceptable for offline rendering/playback)
+
+## Audio Quality Comparison
+
+**Sine Wave**: Pure mathematical sine waves with envelope shaping. Clear but synthetic sound.
+
+**SoundFont**: Sampled piano with realistic attack, body, and release. Professional quality.
+
+Choose based on your needs:
+- Development/testing → Sine Wave
+- Demos/presentations → SoundFont
+- Production → SoundFont

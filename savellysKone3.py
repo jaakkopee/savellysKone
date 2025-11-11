@@ -51,6 +51,7 @@ class Bar:
     def make_note_list(self):
         self.note_list = []
         delta = self.bar_onset
+        print(f"DEBUG make_note_list: bar_onset={self.bar_onset}, ioi={self.ioi}, num_pitches={len(self.pitch_list)}")
         for i in range(len(self.pitch_list)):
             note = Note()
             note.onset = delta
@@ -58,6 +59,8 @@ class Bar:
             note.duration = self.duration_list[i]
             note.velocity = self.velocity_list[i]
             self.note_list.append(note)
+            if i < 3:  # Print first 3 notes
+                print(f"  Note {i}: onset={note.onset}, pitch={note.pitch}")
             delta += self.ioi
         return
     
@@ -113,7 +116,7 @@ class Bar:
     
     
 class Song:
-    def __init__(self, name="skTrack", num_bars=4, ioi=1.0, pitch_generator=None, duration_generator=None, velocity_generator=None, generate_every_bar=False):
+    def __init__(self, name="skTrack", num_bars=4, ioi=1.0, pitch_generator=None, duration_generator=None, velocity_generator=None, generate_every_bar=False, list_length_behavior="truncate"):
         self.name = name
         self.bar_list = []
         self.ioi = ioi
@@ -125,55 +128,125 @@ class Song:
         self.duration_list = []
         self.velocity_list = []
         self.generate_every_bar = generate_every_bar
+        self.list_length_behavior = list_length_behavior  # "truncate", "loop_longest", "loop_bar"
 
     def generate_parameter_lists(self):
         if self.pitch_generator:
             self.pitch_list = self.pitch_generator.generate_list()
+            print(f"    Generated pitch_list: {len(self.pitch_list)} notes")
         else:
             self.pitch_list = [60]*8
+            print(f"    Using default pitch_list: {len(self.pitch_list)} notes")
         if self.duration_generator:
             self.duration_list = self.duration_generator.generate_list()
+            print(f"    Generated duration_list: {len(self.duration_list)} notes")
         else:
             self.duration_list = [1]*8
+            print(f"    Using default duration_list: {len(self.duration_list)} notes")
         if self.velocity_generator:
             self.velocity_list = self.velocity_generator.generate_list()
+            print(f"    Generated velocity_list: {len(self.velocity_list)} notes")
         else:
             self.velocity_list = [100]*8
+            print(f"    Using default velocity_list: {len(self.velocity_list)} notes")
 
-        #find shortest list
-        min_length = min(len(self.pitch_list), len(self.duration_list), len(self.velocity_list))
-        #truncate lists
-        self.pitch_list = self.pitch_list[:min_length]
-        self.duration_list = self.duration_list[:min_length]
-        self.velocity_list = self.velocity_list[:min_length]
+        print(f"    Before adjustment: pitch={len(self.pitch_list)}, duration={len(self.duration_list)}, velocity={len(self.velocity_list)}")
+        print(f"    List length behavior: {self.list_length_behavior}")
+        
+        if self.list_length_behavior == "truncate":
+            # Truncate all lists to the shortest length
+            min_length = min(len(self.pitch_list), len(self.duration_list), len(self.velocity_list))
+            self.pitch_list = self.pitch_list[:min_length]
+            self.duration_list = self.duration_list[:min_length]
+            self.velocity_list = self.velocity_list[:min_length]
+            print(f"    After truncation: all lists = {min_length} notes")
+            
+        elif self.list_length_behavior == "loop_longest":
+            # Loop shorter lists to match the longest
+            max_length = max(len(self.pitch_list), len(self.duration_list), len(self.velocity_list))
+            while len(self.pitch_list) < max_length:
+                self.pitch_list.extend(self.pitch_list[:max_length - len(self.pitch_list)])
+            while len(self.duration_list) < max_length:
+                self.duration_list.extend(self.duration_list[:max_length - len(self.duration_list)])
+            while len(self.velocity_list) < max_length:
+                self.velocity_list.extend(self.velocity_list[:max_length - len(self.velocity_list)])
+            self.pitch_list = self.pitch_list[:max_length]
+            self.duration_list = self.duration_list[:max_length]
+            self.velocity_list = self.velocity_list[:max_length]
+            print(f"    After looping to longest: all lists = {max_length} notes")
+            
+        elif self.list_length_behavior == "loop_bar":
+            # Loop until all lists match and length is even (for bar alignment)
+            max_length = max(len(self.pitch_list), len(self.duration_list), len(self.velocity_list))
+            # Find the least common multiple or next power of 2
+            target_length = max_length
+            if target_length % 2 != 0:
+                target_length += 1
+            # Extend all lists to target length by looping
+            while len(self.pitch_list) < target_length:
+                self.pitch_list.extend(self.pitch_list[:target_length - len(self.pitch_list)])
+            while len(self.duration_list) < target_length:
+                self.duration_list.extend(self.duration_list[:target_length - len(self.duration_list)])
+            while len(self.velocity_list) < target_length:
+                self.velocity_list.extend(self.velocity_list[:target_length - len(self.velocity_list)])
+            self.pitch_list = self.pitch_list[:target_length]
+            self.duration_list = self.duration_list[:target_length]
+            self.velocity_list = self.velocity_list[:target_length]
+            print(f"    After looping to bar length: all lists = {target_length} notes (even)")
 
         return
 
     def make_bar_list(self):
         self.bar_list = []
         onset = 0
+        print(f"DEBUG make_bar_list: num_bars={self.num_bars}, song.ioi={self.ioi}, generate_every_bar={self.generate_every_bar}")
         for i in range(self.num_bars):
             if self.generate_every_bar:
                 self.generate_parameter_lists()
+                print(f"  Bar {i}: Generated lists - pitch:{len(self.pitch_list)}, duration:{len(self.duration_list)}, velocity:{len(self.velocity_list)}")
             bar = Bar(onset, self.ioi, self.pitch_list, self.duration_list, self.velocity_list)
             bar.make_note_list()
             self.bar_list.append(bar)
+            prev_onset = onset
             onset += bar.ioi*len(bar.note_list)
+            print(f"  Bar {i}: onset was {prev_onset}, added {bar.ioi}*{len(bar.note_list)}={bar.ioi*len(bar.note_list)}, new onset={onset}")
         return
     
     def make_midi_file(self, filename):
         # Create MIDI file with 1 track, format 0 (single track)
-        # Setting numTracks=1 but using removeDuplicates and deinterleave to ensure clean output
-        midi_file = MIDIFile(numTracks=1, removeDuplicates=True, deinterleave=False, 
+        # Disable removeDuplicates to ensure all notes are written
+        midi_file = MIDIFile(numTracks=1, removeDuplicates=False, deinterleave=False, 
                             adjust_origin=False, file_format=0)
         # Add tempo to track 0
         midi_file.addTempo(0, 0, 120)
         # Add track name
         midi_file.addTrackName(0, 0, self.name)
         # Add notes to track 0, channel 0
-        for bar in self.bar_list:
-            for note in bar.note_list:
+        # Debug: Print onset times for first few bars
+        note_count = 0
+        notes_at_time = {}  # Track how many notes at each onset
+        for bar_idx, bar in enumerate(self.bar_list):
+            if bar_idx < 3:  # Print first 3 bars for debugging
+                print(f"Bar {bar_idx}: bar_onset={bar.bar_onset}, num_notes={len(bar.note_list)}")
+                if bar.note_list:
+                    print(f"  First note onset: {bar.note_list[0].onset}, Last note onset: {bar.note_list[-1].onset}")
+            for note_idx, note in enumerate(bar.note_list):
+                # Track notes at same time
+                onset_key = round(note.onset, 3)
+                if onset_key not in notes_at_time:
+                    notes_at_time[onset_key] = []
+                notes_at_time[onset_key].append((note.pitch, bar_idx, note_idx))
+                
                 midi_file.addNote(0, 0, note.pitch, note.onset, note.duration, note.velocity)
+                note_count += 1
+        
+        # Check for overlapping notes
+        print(f"Total notes added to MIDI: {note_count}")
+        overlaps = {k: v for k, v in notes_at_time.items() if len(v) > 1}
+        if overlaps:
+            print(f"WARNING: Found {len(overlaps)} onset times with multiple notes:")
+            for onset, notes_list in list(overlaps.items())[:5]:  # Show first 5
+                print(f"  Onset {onset}: {len(notes_list)} notes - {notes_list}")
         with open(filename, "wb") as output_file:
             midi_file.writeFile(output_file)
         return

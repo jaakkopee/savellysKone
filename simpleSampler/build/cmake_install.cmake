@@ -42,6 +42,7 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/SimpleSampler" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/SimpleSampler")
     execute_process(COMMAND /usr/bin/install_name_tool
+      -delete_rpath "/opt/homebrew/Cellar/fluid-synth/2.5.1/lib"
       -delete_rpath "/opt/homebrew/lib"
       "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/SimpleSampler")
     if(CMAKE_INSTALL_DO_STRIP)

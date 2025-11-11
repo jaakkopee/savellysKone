@@ -521,16 +521,39 @@ $vel08 -> 110"""
         if grammar_type == "pitch":
             self.pitch_min_length_var = tk.StringVar(value="8")
             ttk.Entry(params_frame, textvariable=self.pitch_min_length_var, width=10).pack(side='left', padx=5)
+            # Generate Every Bar checkbox
+            self.pitch_geb_var = tk.BooleanVar(value=False)
+            ttk.Checkbutton(params_frame, text="Generate Every Bar (GEB)", 
+                           variable=self.pitch_geb_var,
+                           command=self.update_geb_status).pack(side='left', padx=20)
+            # Generate button for this specific grammar
+            self.pitch_generate_button = ttk.Button(grammar_frame, text="Generate Pitch List", 
+                       command=lambda: self.generate_single_list("pitch"))
+            self.pitch_generate_button.pack(pady=5)
         elif grammar_type == "duration":
             self.duration_min_length_var = tk.StringVar(value="8")
             ttk.Entry(params_frame, textvariable=self.duration_min_length_var, width=10).pack(side='left', padx=5)
+            # Generate Every Bar checkbox
+            self.duration_geb_var = tk.BooleanVar(value=False)
+            ttk.Checkbutton(params_frame, text="Generate Every Bar (GEB)", 
+                           variable=self.duration_geb_var,
+                           command=self.update_geb_status).pack(side='left', padx=20)
+            # Generate button for this specific grammar
+            self.duration_generate_button = ttk.Button(grammar_frame, text="Generate Duration List", 
+                       command=lambda: self.generate_single_list("duration"))
+            self.duration_generate_button.pack(pady=5)
         else:  # velocity
             self.velocity_min_length_var = tk.StringVar(value="8")
             ttk.Entry(params_frame, textvariable=self.velocity_min_length_var, width=10).pack(side='left', padx=5)
-        
-        # Generate button for this specific grammar
-        ttk.Button(grammar_frame, text=f"Generate {grammar_type.capitalize()} List", 
-                   command=lambda: self.generate_single_list(grammar_type)).pack(pady=5)
+            # Generate Every Bar checkbox
+            self.velocity_geb_var = tk.BooleanVar(value=False)
+            ttk.Checkbutton(params_frame, text="Generate Every Bar (GEB)", 
+                           variable=self.velocity_geb_var,
+                           command=self.update_geb_status).pack(side='left', padx=20)
+            # Generate button for this specific grammar
+            self.velocity_generate_button = ttk.Button(grammar_frame, text="Generate Velocity List", 
+                       command=lambda: self.generate_single_list("velocity"))
+            self.velocity_generate_button.pack(pady=5)
         
         # Output section for this grammar
         output_frame = ttk.LabelFrame(parent, text=f"Generated {grammar_type.capitalize()} List", padding=10)
@@ -558,21 +581,24 @@ $vel08 -> 110"""
         # Pitch list input
         pitch_frame = ttk.Frame(creation_frame)
         pitch_frame.pack(fill='x', pady=2)
-        ttk.Label(pitch_frame, text="Pitch List (comma-separated):").pack(side='left', padx=5)
+        self.pitch_label = ttk.Label(pitch_frame, text="Pitch List (comma-separated):")
+        self.pitch_label.pack(side='left', padx=5)
         self.pitch_list_var = tk.StringVar(value="60, 62, 64, 65, 67, 69, 71, 72")
         ttk.Entry(pitch_frame, textvariable=self.pitch_list_var, width=50).pack(side='left', padx=5)
         
         # Duration list input
         duration_frame = ttk.Frame(creation_frame)
         duration_frame.pack(fill='x', pady=2)
-        ttk.Label(duration_frame, text="Duration List (comma-separated):").pack(side='left', padx=5)
+        self.duration_label = ttk.Label(duration_frame, text="Duration List (comma-separated):")
+        self.duration_label.pack(side='left', padx=5)
         self.duration_list_var = tk.StringVar(value="1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0")
         ttk.Entry(duration_frame, textvariable=self.duration_list_var, width=50).pack(side='left', padx=5)
         
         # Velocity list input
         velocity_frame = ttk.Frame(creation_frame)
         velocity_frame.pack(fill='x', pady=2)
-        ttk.Label(velocity_frame, text="Velocity List (comma-separated):").pack(side='left', padx=5)
+        self.velocity_label = ttk.Label(velocity_frame, text="Velocity List (comma-separated):")
+        self.velocity_label.pack(side='left', padx=5)
         self.velocity_list_var = tk.StringVar(value="60, 80, 100, 90, 70, 95, 85, 110")
         ttk.Entry(velocity_frame, textvariable=self.velocity_list_var, width=50).pack(side='left', padx=5)
         
@@ -700,6 +726,60 @@ $vel08 -> 110"""
         except Exception as e:
             messagebox.showerror("Error", f"Error generating {grammar_type} list: {str(e)}")
     
+    def update_geb_status(self):
+        """Update the labels in Bar Manipulation tab to show GEB status"""
+        # Check which lists have GEB enabled
+        pitch_geb = self.pitch_geb_var.get() if hasattr(self, 'pitch_geb_var') else False
+        duration_geb = self.duration_geb_var.get() if hasattr(self, 'duration_geb_var') else False
+        velocity_geb = self.velocity_geb_var.get() if hasattr(self, 'velocity_geb_var') else False
+        
+        # Update labels
+        if hasattr(self, 'pitch_label'):
+            pitch_text = "Pitch List (comma-separated)" + (" [GEB]" if pitch_geb else "") + ":"
+            self.pitch_label.config(text=pitch_text)
+        
+        if hasattr(self, 'duration_label'):
+            duration_text = "Duration List (comma-separated)" + (" [GEB]" if duration_geb else "") + ":"
+            self.duration_label.config(text=duration_text)
+        
+        if hasattr(self, 'velocity_label'):
+            velocity_text = "Velocity List (comma-separated)" + (" [GEB]" if velocity_geb else "") + ":"
+            self.velocity_label.config(text=velocity_text)
+        
+        # Enable/disable generate buttons and clear lists based on GEB status
+        if hasattr(self, 'pitch_generate_button'):
+            self.pitch_generate_button.config(state='disabled' if pitch_geb else 'normal')
+            if pitch_geb:
+                # Clear generated pitch list in grammar tab
+                if hasattr(self, 'pitch_output_text'):
+                    self.pitch_output_text.delete('1.0', 'end')
+                    self.pitch_output_text.insert('1.0', 'GEB - List will be generated for each bar')
+                # Clear pitch list in bar manipulation tab
+                if hasattr(self, 'pitch_list_var'):
+                    self.pitch_list_var.set('GEB')
+        
+        if hasattr(self, 'duration_generate_button'):
+            self.duration_generate_button.config(state='disabled' if duration_geb else 'normal')
+            if duration_geb:
+                # Clear generated duration list in grammar tab
+                if hasattr(self, 'duration_output_text'):
+                    self.duration_output_text.delete('1.0', 'end')
+                    self.duration_output_text.insert('1.0', 'GEB - List will be generated for each bar')
+                # Clear duration list in bar manipulation tab
+                if hasattr(self, 'duration_list_var'):
+                    self.duration_list_var.set('GEB')
+        
+        if hasattr(self, 'velocity_generate_button'):
+            self.velocity_generate_button.config(state='disabled' if velocity_geb else 'normal')
+            if velocity_geb:
+                # Clear generated velocity list in grammar tab
+                if hasattr(self, 'velocity_output_text'):
+                    self.velocity_output_text.delete('1.0', 'end')
+                    self.velocity_output_text.insert('1.0', 'GEB - List will be generated for each bar')
+                # Clear velocity list in bar manipulation tab
+                if hasattr(self, 'velocity_list_var'):
+                    self.velocity_list_var.set('GEB')
+    
     def generate_all_lists(self):
         """Generate all three lists (pitch, duration, velocity)"""
         try:
@@ -765,10 +845,47 @@ $vel08 -> 110"""
     def create_bar(self):
         """Create a Bar object"""
         try:
-            # Parse lists
-            pitch_list = [int(x.strip()) for x in self.pitch_list_var.get().split(',')]
-            duration_list = [float(x.strip()) for x in self.duration_list_var.get().split(',')]
-            velocity_list = [int(x.strip()) for x in self.velocity_list_var.get().split(',')]
+            # Check if any parameter has GEB enabled
+            pitch_geb = self.pitch_geb_var.get() if hasattr(self, 'pitch_geb_var') else False
+            duration_geb = self.duration_geb_var.get() if hasattr(self, 'duration_geb_var') else False
+            velocity_geb = self.velocity_geb_var.get() if hasattr(self, 'velocity_geb_var') else False
+            
+            # Block bar creation only if ALL parameters are GEB
+            all_geb = pitch_geb and duration_geb and velocity_geb
+            
+            if all_geb:
+                messagebox.showwarning("All Parameters GEB", 
+                    "Cannot create bar manually because all parameters (Pitch, Duration, Velocity) have Generate Every Bar (GEB) enabled.\n\n" +
+                    "Please disable GEB for at least one parameter in the List Generator tab, or create a Song instead.")
+                return
+            
+            # Parse lists - for GEB parameters, generate them on the fly
+            if pitch_geb:
+                # Generate pitch list from grammar
+                pitch_grammar = self.pitch_grammar_text.get('1.0', 'end-1c')
+                pitch_min_length = int(self.pitch_min_length_var.get())
+                pitch_generator = sk3.ListGenerator(pitch_grammar, pitch_min_length, "pitch")
+                pitch_list = pitch_generator.generate_list()
+            else:
+                pitch_list = [int(x.strip()) for x in self.pitch_list_var.get().split(',')]
+            
+            if duration_geb:
+                # Generate duration list from grammar
+                duration_grammar = self.duration_grammar_text.get('1.0', 'end-1c')
+                duration_min_length = int(self.duration_min_length_var.get())
+                duration_generator = sk3.ListGenerator(duration_grammar, duration_min_length, "duration")
+                duration_list = duration_generator.generate_list()
+            else:
+                duration_list = [float(x.strip()) for x in self.duration_list_var.get().split(',')]
+            
+            if velocity_geb:
+                # Generate velocity list from grammar
+                velocity_grammar = self.velocity_grammar_text.get('1.0', 'end-1c')
+                velocity_min_length = int(self.velocity_min_length_var.get())
+                velocity_generator = sk3.ListGenerator(velocity_grammar, velocity_min_length, "velocity")
+                velocity_list = velocity_generator.generate_list()
+            else:
+                velocity_list = [int(x.strip()) for x in self.velocity_list_var.get().split(',')]
             
             # Get parameters
             onset = float(self.onset_var.get())
@@ -799,6 +916,11 @@ $vel08 -> 110"""
             self.bar_display.insert('1.0', "No bar created yet.")
             return
         
+        # Check GEB status
+        pitch_geb = self.pitch_geb_var.get() if hasattr(self, 'pitch_geb_var') else False
+        duration_geb = self.duration_geb_var.get() if hasattr(self, 'duration_geb_var') else False
+        velocity_geb = self.velocity_geb_var.get() if hasattr(self, 'velocity_geb_var') else False
+        
         self.bar_display.delete('1.0', 'end')
         self.bar_display.insert('end', f"Bar Information:\n")
         self.bar_display.insert('end', f"Onset: {self.current_bar.bar_onset}\n")
@@ -810,8 +932,13 @@ $vel08 -> 110"""
         self.bar_display.insert('end', "-" * 60 + "\n")
         
         for i, note in enumerate(self.current_bar.note_list):
+            # Show "GEB" for parameters that have GEB enabled
+            pitch_str = "GEB" if pitch_geb else str(note.pitch)
+            duration_str = "GEB" if duration_geb else f"{note.duration:.2f}"
+            velocity_str = "GEB" if velocity_geb else str(note.velocity)
+            
             self.bar_display.insert('end', 
-                f"{i:<8}{note.pitch:<10}{note.onset:<15.2f}{note.duration:<15.2f}{note.velocity:<10}\n")
+                f"{i:<8}{pitch_str:<10}{note.onset:<15.2f}{duration_str:<15}{velocity_str:<10}\n")
     
     def update_song_from_bar(self):
         """Update the current song with the modified bar and refresh input lists"""
@@ -838,10 +965,52 @@ $vel08 -> 110"""
                 if hasattr(self, 'piano_canvas'):
                     self.update_piano_roll()
     
+    def check_geb_for_operation(self, operation_type):
+        """Check if GEB is enabled for parameters affected by this operation.
+        Returns True if operation can proceed, False if blocked by GEB.
+        Operations are only blocked if they would affect GEB parameters."""
+        pitch_geb = self.pitch_geb_var.get() if hasattr(self, 'pitch_geb_var') else False
+        duration_geb = self.duration_geb_var.get() if hasattr(self, 'duration_geb_var') else False
+        velocity_geb = self.velocity_geb_var.get() if hasattr(self, 'velocity_geb_var') else False
+        
+        # Map operations to the parameters they affect
+        operation_affects = {
+            "transpose": ["pitch"],
+            "random_pitch": ["pitch"],
+            "set_duration": ["duration"],
+            "random_duration": ["duration"],
+            "random_velocity": ["velocity"],
+            "reverse": ["pitch", "duration", "velocity"],  # reverse affects all
+            "random_onset": []  # onset has no GEB
+        }
+        
+        affected_params = operation_affects.get(operation_type, [])
+        blocked = []
+        
+        for param in affected_params:
+            if param == "pitch" and pitch_geb:
+                blocked.append("Pitch (GEB)")
+            elif param == "duration" and duration_geb:
+                blocked.append("Duration (GEB)")
+            elif param == "velocity" and velocity_geb:
+                blocked.append("Velocity (GEB)")
+        
+        if blocked:
+            messagebox.showwarning("GEB Active",
+                f"This operation affects the following GEB-enabled parameters:\n\n" +
+                ", ".join(blocked) + "\n\n" +
+                "The operation cannot be performed on GEB parameters.\n" +
+                "Disable GEB for these parameters to use this operation.")
+            return False
+        return True
+    
     def transpose_bar(self):
         """Transpose the current bar"""
         if self.current_bar is None:
             messagebox.showwarning("Warning", "Please create a bar first!")
+            return
+        
+        if not self.check_geb_for_operation("transpose"):
             return
         
         try:
@@ -861,6 +1030,9 @@ $vel08 -> 110"""
             messagebox.showwarning("Warning", "Please create a bar first!")
             return
         
+        if not self.check_geb_for_operation("set_duration"):
+            return
+        
         try:
             duration = float(self.set_duration_var.get())
             self.current_bar.set_note_list_durations(duration)
@@ -878,6 +1050,9 @@ $vel08 -> 110"""
             messagebox.showwarning("Warning", "Please create a bar first!")
             return
         
+        if not self.check_geb_for_operation("reverse"):
+            return
+        
         try:
             self.current_bar.reverse_note_list()
             self.update_song_from_bar()  # Update song if it exists
@@ -890,6 +1065,9 @@ $vel08 -> 110"""
         """Apply random variations to pitches"""
         if self.current_bar is None:
             messagebox.showwarning("Warning", "Please create a bar first!")
+            return
+        
+        if not self.check_geb_for_operation("random_pitch"):
             return
         
         try:
@@ -906,6 +1084,9 @@ $vel08 -> 110"""
             messagebox.showwarning("Warning", "Please create a bar first!")
             return
         
+        if not self.check_geb_for_operation("random_duration"):
+            return
+        
         try:
             self.current_bar.random_duration()
             self.update_song_from_bar()  # Update song if it exists
@@ -920,6 +1101,9 @@ $vel08 -> 110"""
             messagebox.showwarning("Warning", "Please create a bar first!")
             return
         
+        if not self.check_geb_for_operation("random_velocity"):
+            return
+        
         try:
             self.current_bar.random_velocity()
             self.update_song_from_bar()  # Update song if it exists
@@ -932,6 +1116,9 @@ $vel08 -> 110"""
         """Apply random variations to onsets"""
         if self.current_bar is None:
             messagebox.showwarning("Warning", "Please create a bar first!")
+            return
+        
+        if not self.check_geb_for_operation("random_onset"):
             return
         
         try:
@@ -1062,6 +1249,18 @@ $vel08 -> 110"""
         ttk.Label(params_frame, text="IOI:").pack(side='left', padx=5)
         self.song_ioi_var = tk.StringVar(value="0.75")
         ttk.Entry(params_frame, textvariable=self.song_ioi_var, width=10).pack(side='left', padx=5)
+        
+        # List length behavior selector
+        list_behavior_frame = ttk.Frame(creation_frame)
+        list_behavior_frame.pack(fill='x', pady=5)
+        ttk.Label(list_behavior_frame, text="Uneven list lengths:").pack(side='left', padx=5)
+        self.list_length_behavior_var = tk.StringVar(value="truncate")
+        ttk.Radiobutton(list_behavior_frame, text="Truncate to shortest", 
+                       variable=self.list_length_behavior_var, value="truncate").pack(side='left', padx=5)
+        ttk.Radiobutton(list_behavior_frame, text="Loop to longest", 
+                       variable=self.list_length_behavior_var, value="loop_longest").pack(side='left', padx=5)
+        ttk.Radiobutton(list_behavior_frame, text="Loop to matching bar", 
+                       variable=self.list_length_behavior_var, value="loop_bar").pack(side='left', padx=5)
         
         ttk.Button(creation_frame, text="Create Song", 
                    command=self.create_song).pack(pady=5)
@@ -1228,22 +1427,92 @@ $vel08 -> 110"""
     def create_song(self):
         """Create a Song object"""
         try:
-            # Parse lists from the bar manipulation tab
-            pitch_list = [int(x.strip()) for x in self.pitch_list_var.get().split(',')]
-            duration_list = [float(x.strip()) for x in self.duration_list_var.get().split(',')]
-            velocity_list = [int(x.strip()) for x in self.velocity_list_var.get().split(',')]
+            # Check for GEB status
+            pitch_geb = self.pitch_geb_var.get() if hasattr(self, 'pitch_geb_var') else False
+            duration_geb = self.duration_geb_var.get() if hasattr(self, 'duration_geb_var') else False
+            velocity_geb = self.velocity_geb_var.get() if hasattr(self, 'velocity_geb_var') else False
             
             # Get song parameters
             name = self.song_name_var.get()
             num_bars = int(self.num_bars_var.get())
             ioi = float(self.song_ioi_var.get())
             
-            # Create Song
-            self.current_song = sk3.Song(name=name, num_bars=num_bars, ioi=ioi)
-            self.current_song.pitch_list = pitch_list
-            self.current_song.duration_list = duration_list
-            self.current_song.velocity_list = velocity_list
+            # Determine if we need to use generate_every_bar
+            generate_every_bar = pitch_geb or duration_geb or velocity_geb
+            
+            # Create generators for GEB parameters
+            pitch_generator = None
+            duration_generator = None
+            velocity_generator = None
+            
+            if pitch_geb:
+                # Create pitch generator from grammar
+                pitch_grammar = self.pitch_grammar_text.get('1.0', 'end-1c')
+                pitch_min_length = int(self.pitch_min_length_var.get())
+                pitch_generator = sk3.ListGenerator(pitch_grammar, pitch_min_length, "pitch")
+            
+            if duration_geb:
+                # Create duration generator from grammar
+                duration_grammar = self.duration_grammar_text.get('1.0', 'end-1c')
+                duration_min_length = int(self.duration_min_length_var.get())
+                duration_generator = sk3.ListGenerator(duration_grammar, duration_min_length, "duration")
+            
+            if velocity_geb:
+                # Create velocity generator from grammar
+                velocity_grammar = self.velocity_grammar_text.get('1.0', 'end-1c')
+                velocity_min_length = int(self.velocity_min_length_var.get())
+                velocity_generator = sk3.ListGenerator(velocity_grammar, velocity_min_length, "velocity")
+            
+            # Get list length behavior
+            list_length_behavior = self.list_length_behavior_var.get()
+            
+            # Create Song with or without generators
+            self.current_song = sk3.Song(
+                name=name, 
+                num_bars=num_bars, 
+                ioi=ioi,
+                pitch_generator=pitch_generator,
+                duration_generator=duration_generator,
+                velocity_generator=velocity_generator,
+                generate_every_bar=generate_every_bar,
+                list_length_behavior=list_length_behavior
+            )
+            
+            # For non-GEB parameters, parse and set the lists BEFORE making bars
+            # These will be used by all bars when GEB is not enabled for that parameter
+            if not pitch_geb:
+                pitch_list = [int(x.strip()) for x in self.pitch_list_var.get().split(',')]
+                self.current_song.pitch_list = pitch_list
+            
+            if not duration_geb:
+                duration_list = [float(x.strip()) for x in self.duration_list_var.get().split(',')]
+                self.current_song.duration_list = duration_list
+            
+            if not velocity_geb:
+                velocity_list = [int(x.strip()) for x in self.velocity_list_var.get().split(',')]
+                self.current_song.velocity_list = velocity_list
+            
+            # Only generate parameter lists if we're using GEB or if lists aren't already set
+            # When generate_every_bar=False and lists are manually set, don't call generate_parameter_lists
+            # because it would override our manually set lists with defaults
+            if generate_every_bar:
+                # GEB is enabled - lists will be generated per bar in make_bar_list()
+                pass
+            elif pitch_generator or duration_generator or velocity_generator:
+                # We have generators but not using GEB - generate once
+                self.current_song.generate_parameter_lists()
+            # else: lists are already set manually above, don't generate
+            
+            # Create bars - if generate_every_bar is True, 
+            # make_bar_list() will call generate_parameter_lists() for each bar
             self.current_song.make_bar_list()
+            
+            # Debug: Print actual number of bars created
+            print(f"DEBUG: Created {len(self.current_song.bar_list)} bars (expected {num_bars})")
+            print(f"DEBUG: List lengths - pitch: {len(self.current_song.pitch_list)}, duration: {len(self.current_song.duration_list)}, velocity: {len(self.current_song.velocity_list)}")
+            if self.current_song.bar_list:
+                print(f"DEBUG: First bar has {len(self.current_song.bar_list[0].note_list)} notes")
+                print(f"DEBUG: Last bar onset: {self.current_song.bar_list[-1].bar_onset}")
             
             # Display song
             self.display_song()
@@ -1267,11 +1536,12 @@ $vel08 -> 110"""
             
             # Update status
             total_notes = sum(len(bar.note_list) for bar in self.current_song.bar_list)
-            self.object_status_label.config(text=f"Song: {name} ({num_bars} bars, {total_notes} notes)", 
+            geb_status = " (GEB)" if generate_every_bar else ""
+            self.object_status_label.config(text=f"Song: {name} ({num_bars} bars, {total_notes} notes){geb_status}", 
                                             foreground='green')
-            self.update_status(f"Song '{name}' created with {num_bars} bars")
+            self.update_status(f"Song '{name}' created with {num_bars} bars{geb_status}")
             
-            messagebox.showinfo("Success", f"Song '{name}' created with {num_bars} bars!")
+            messagebox.showinfo("Success", f"Song '{name}' created with {num_bars} bars!{geb_status}")
             
         except ValueError as e:
             messagebox.showerror("Error", f"Invalid input: {str(e)}")
@@ -1609,15 +1879,25 @@ $vel08 -> 110"""
             self.current_song.make_midi_file(temp_path)
             print(f"MIDI file created, size: {os.path.getsize(temp_path)} bytes")
             
-            # Build command string
-            command = f"{sampler_path} {temp_path}"
+            # Build command string - MIDI file must come first!
+            command = f'"{sampler_path}" "{temp_path}"'
+            
+            # Add soundfont if checkbox is checked and path is set
+            if hasattr(self, 'use_soundfont_var') and self.use_soundfont_var.get():
+                if hasattr(self, 'soundfont_path_var') and self.soundfont_path_var.get():
+                    soundfont_path = self.soundfont_path_var.get()
+                    if os.path.isfile(soundfont_path):
+                        command = f'"{sampler_path}" "{temp_path}" -sf "{soundfont_path}"'
+                        print(f"Using SoundFont: {soundfont_path}")
+                    else:
+                        print(f"Warning: SoundFont file not found: {soundfont_path}")
+            
             print(f"Executing: {command}")
             
             # Execute SimpleSampler in background
+            # Don't capture stdout/stderr to allow audio to work properly
             import subprocess
-            process = subprocess.Popen(command, shell=True, 
-                                      stdout=subprocess.PIPE, 
-                                      stderr=subprocess.PIPE)
+            process = subprocess.Popen(command, shell=True)
             
             # Store for cleanup
             self.temp_midi_path = temp_path
@@ -1700,6 +1980,33 @@ For more details, see: simpleSampler/README.md
         
         messagebox.showinfo("SimpleSampler Build Instructions", instructions)
     
+    def toggle_soundfont(self):
+        """Handle soundfont checkbox toggle - open file browser when checked"""
+        if self.use_soundfont_var.get():
+            # Checkbox was just checked - open file browser
+            soundfonts_dir = os.path.join(os.path.dirname(__file__), 'simpleSampler', 'soundfonts')
+            # Create directory if it doesn't exist
+            if not os.path.exists(soundfonts_dir):
+                soundfonts_dir = os.path.join(os.path.dirname(__file__), 'simpleSampler', 'build', 'soundfonts')
+            if not os.path.exists(soundfonts_dir):
+                soundfonts_dir = os.path.dirname(__file__)
+            
+            filename = filedialog.askopenfilename(
+                title="Select SoundFont File",
+                filetypes=[("SoundFont Files", "*.sf2"), ("All Files", "*.*")],
+                initialdir=soundfonts_dir
+            )
+            if filename:
+                self.soundfont_path_var.set(filename)
+                self.update_status(f"SoundFont selected: {os.path.basename(filename)}")
+            else:
+                # User cancelled - uncheck the checkbox
+                self.use_soundfont_var.set(False)
+        else:
+            # Checkbox was unchecked - clear the soundfont path
+            self.soundfont_path_var.set("")
+            self.update_status("SoundFont disabled - using sine wave synthesis")
+    
     def create_piano_roll_tab(self):
         """Create the Piano Roll Visualization tab"""
         tab = ttk.Frame(self.notebook)
@@ -1735,6 +2042,13 @@ For more details, see: simpleSampler/README.md
                        command=self.play_current_song).pack(side='left', padx=5)
             ttk.Button(button_frame, text="⏹️ Stop", 
                        command=self.stop_playback).pack(side='left', padx=5)
+            
+            # Soundfont checkbox
+            self.use_soundfont_var = tk.BooleanVar(value=False)
+            self.soundfont_path_var = tk.StringVar(value="")
+            ttk.Checkbutton(button_frame, text="Use SoundFont", 
+                           variable=self.use_soundfont_var,
+                           command=self.toggle_soundfont).pack(side='left', padx=(10,5))
         else:
             # Show message when SimpleSampler is not available
             sampler_status = ttk.Label(button_frame, 

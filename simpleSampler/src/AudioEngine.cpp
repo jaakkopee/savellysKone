@@ -4,12 +4,15 @@
 
 AudioEngine::AudioEngine(uint32_t sr)
     : sampleRate(sr),
-      synth(sr),
+      sineWaveSynth(sr),
+      synthMode(SynthMode::SineWave),
       currentTime(0.0),
       playing(false),
       currentNoteIndex(0)
 {
     sampleBuffer.resize(BUFFER_SIZE * CHANNEL_COUNT);
+    floatBufferLeft.resize(BUFFER_SIZE);
+    floatBufferRight.resize(BUFFER_SIZE);
     // SFML 3.0 requires channel map
     std::vector<sf::SoundChannel> channelMap = {sf::SoundChannel::FrontLeft, sf::SoundChannel::FrontRight};
     initialize(CHANNEL_COUNT, sampleRate, channelMap);
@@ -46,6 +49,15 @@ bool AudioEngine::loadMidiFile(const std::string& filename) {
     return true;
 }
 
+bool AudioEngine::loadSoundFont(const std::string& path) {
+    return soundFontSynth.loadSoundFont(path);
+}
+
+void AudioEngine::setSynthMode(SynthMode mode) {
+    synthMode = mode;
+    std::cout << "Synthesis mode: " << (mode == SynthMode::SineWave ? "Sine Wave" : "SoundFont") << std::endl;
+}
+
 void AudioEngine::start() {
     if (!tracks.empty()) {
         std::cout << "AudioEngine::start() called" << std::endl;
@@ -68,7 +80,8 @@ void AudioEngine::start() {
 void AudioEngine::stop() {
     sf::SoundStream::stop();
     playing = false;
-    synth.allNotesOff();
+    sineWaveSynth.allNotesOff();
+    soundFontSynth.allNotesOff();
 }
 
 void AudioEngine::reset() {
@@ -95,7 +108,6 @@ bool AudioEngine::onGetData(Chunk& data) {
     }
     
     if (!playing) {
-        std::cout << "onGetData() - not playing, returning false" << std::endl;
         return false;
     }
     
@@ -104,35 +116,38 @@ bool AudioEngine::onGetData(Chunk& data) {
         std::cout << "Generated " << bufferCount << " audio buffers" << std::endl;
     }
     
-    static int nonZeroSampleCount = 0;
-    static int sustainSampleCount = 0;
-    
-    // Generate audio samples
-    for (size_t i = 0; i < BUFFER_SIZE; ++i) {
-        processNotes();
-        
-        double sample = synth.getSample(currentTime);
-        
-        // Debug: Check for non-zero samples
-        if (sample != 0.0 && nonZeroSampleCount < 5) {
-            std::cout << "Non-zero sample: " << sample << " at time " << currentTime << std::endl;
-            nonZeroSampleCount++;
+    if (synthMode == SynthMode::SineWave) {
+        // Sine wave synthesis mode
+        for (size_t i = 0; i < BUFFER_SIZE; ++i) {
+            processNotes();
+            
+            double sample = sineWaveSynth.getSample(currentTime);
+            
+            // Convert to 16-bit integer range
+            int16_t sampleValue = static_cast<int16_t>(sample * 32767.0);
+            
+            // Stereo output (same signal on both channels)
+            sampleBuffer[i * 2] = sampleValue;     // Left
+            sampleBuffer[i * 2 + 1] = sampleValue; // Right
+            
+            currentTime = currentTime + (1.0 / sampleRate);
+        }
+    } else {
+        // SoundFont synthesis mode
+        // Process MIDI events first
+        for (size_t i = 0; i < BUFFER_SIZE; ++i) {
+            processNotes();
+            currentTime = currentTime + (1.0 / sampleRate);
         }
         
-        // Debug: Check for sustained samples (after attack phase)
-        if (currentTime > 0.05 && currentTime < 0.1 && std::abs(sample) > 0.1 && sustainSampleCount < 3) {
-            std::cout << "SUSTAIN sample: " << sample << " at time " << currentTime << std::endl;
-            sustainSampleCount++;
+        // Get audio from FluidSynth
+        soundFontSynth.getSamples(floatBufferLeft.data(), floatBufferRight.data(), BUFFER_SIZE);
+        
+        // Convert float samples to int16_t
+        for (size_t i = 0; i < BUFFER_SIZE; ++i) {
+            sampleBuffer[i * 2] = static_cast<int16_t>(floatBufferLeft[i] * 32767.0f);
+            sampleBuffer[i * 2 + 1] = static_cast<int16_t>(floatBufferRight[i] * 32767.0f);
         }
-        
-        // Convert to 16-bit integer range
-        int16_t sampleValue = static_cast<int16_t>(sample * 32767.0);
-        
-        // Stereo output (same signal on both channels)
-        sampleBuffer[i * 2] = sampleValue;     // Left
-        sampleBuffer[i * 2 + 1] = sampleValue; // Right
-        
-        currentTime = currentTime + (1.0 / sampleRate);
     }
     
     data.samples = sampleBuffer.data();
@@ -145,16 +160,14 @@ bool AudioEngine::onGetData(Chunk& data) {
 void AudioEngine::onSeek(sf::Time timeOffset) {
     currentTime = timeOffset.asSeconds();
     currentNoteIndex = 0;
-    synth.allNotesOff();
+    sineWaveSynth.allNotesOff();
+    soundFontSynth.allNotesOff();
 }
 
 void AudioEngine::processNotes() {
     if (tracks.empty()) {
         return;
     }
-    
-    static int noteOnCount = 0;
-    static int noteOffCount = 0;
     
     // Process all tracks
     for (auto& track : tracks) {
@@ -164,12 +177,10 @@ void AudioEngine::processNotes() {
             // Trigger note on
             if (note.startTime <= currentTime && 
                 note.startTime > (currentTime - (1.0 / sampleRate))) {
-                synth.noteOn(note.pitch, note.velocity, 0.0);
-                noteOnCount++;
-                if (noteOnCount <= 10) {
-                    std::cout << "Note ON: pitch=" << (int)note.pitch 
-                              << " vel=" << (int)note.velocity 
-                              << " time=" << currentTime << std::endl;
+                if (synthMode == SynthMode::SineWave) {
+                    sineWaveSynth.noteOn(note.pitch, note.velocity, 0.0);
+                } else {
+                    soundFontSynth.noteOn(note.pitch, note.velocity);
                 }
             }
             
@@ -177,11 +188,10 @@ void AudioEngine::processNotes() {
             double noteEndTime = note.startTime + note.duration;
             if (noteEndTime <= currentTime && 
                 noteEndTime > (currentTime - (1.0 / sampleRate))) {
-                synth.noteOff(note.pitch, 0.0);
-                noteOffCount++;
-                if (noteOffCount <= 10) {
-                    std::cout << "Note OFF: pitch=" << (int)note.pitch 
-                              << " time=" << currentTime << std::endl;
+                if (synthMode == SynthMode::SineWave) {
+                    sineWaveSynth.noteOff(note.pitch, 0.0);
+                } else {
+                    soundFontSynth.noteOff(note.pitch);
                 }
             }
         }

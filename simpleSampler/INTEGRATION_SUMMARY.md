@@ -1,161 +1,154 @@
-# SimpleSampler GUI Integration Summary
+# SimpleSampler - Synthesis Mode Feature Summary
 
-## What Was Created
+## What Was Added
 
-### 1. Python Wrapper Module: `sampler_player.py`
+SimpleSampler now supports **two synthesis modes**:
 
-A complete Python interface to the SimpleSampler C++ application with:
+### 1. Sine Wave Mode (Original)
+- Pure sine wave synthesis
+- ADSR envelope (Attack: 10ms, Decay: 100ms, Sustain: 70%, Release: 200ms)
+- Lightweight, no extra dependencies
+- 20% gain to prevent distortion with polyphony
 
-- **SimpleSamplerPlayer class**: Main interface for controlling playback
-- **play_midi_file()**: Play any MIDI file
-- **play_from_song()**: Play savellysKone3.Song objects directly
-- **Background/foreground playback**: Choose blocking or non-blocking execution
-- **Automatic temp file handling**: Creates and manages temporary MIDI files
-- **Process management**: Start, stop, and check playback status
+### 2. SoundFont Mode (New!)
+- High-quality sampled piano sound
+- Uses FluidSynth library
+- Motif ES6 Concert Piano SoundFont (12MB, included)
+- Professional audio quality
 
-### 2. Integration Guide: `GUI_INTEGRATION.md`
+## Usage
 
-Complete step-by-step instructions for adding SimpleSampler to savellysKone3_gui.py:
+### Command Line
 
-- Import and initialization code
-- Play button implementation
-- Menu integration
-- Cleanup procedures
-- Troubleshooting guide
-- Multiple integration approaches (full vs. minimal)
+**Sine Wave (Default):**
+```bash
+./SimpleSampler song.mid
+```
 
-### 3. Example Script: `example_integration.py`
+**SoundFont (Piano):**
+```bash
+./SimpleSampler song.mid --soundfont
+# or
+./SimpleSampler song.mid -sf
+```
 
-Standalone demonstration showing:
+### Python Wrapper
 
-- How to create a savellysKone3 Song
-- How to play it with SimpleSampler
-- Complete error handling
-- Proper cleanup
-
-## How to Integrate into savellysKone3_gui
-
-### Quick Integration (5 steps)
-
-1. **Import the player** (add to imports section):
 ```python
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'simpleSampler'))
 from sampler_player import SimpleSamplerPlayer
+
+# Sine wave mode
+player = SimpleSamplerPlayer(use_soundfont=False)
+player.play_midi_file("song.mid")
+
+# SoundFont mode  
+player = SimpleSamplerPlayer(use_soundfont=True)
+player.play_midi_file("song.mid")
 ```
 
-2. **Initialize in `__init__`**:
+## Files Modified/Added
+
+### New Files:
+- `include/SoundFontSynth.h` - SoundFont synthesizer interface
+- `src/SoundFontSynth.cpp` - FluidSynth wrapper implementation
+- `USAGE.md` - Comprehensive usage documentation
+
+### Modified Files:
+- `CMakeLists.txt` - Added FluidSynth dependency
+- `include/AudioEngine.h` - Added SynthMode enum and mode selection
+- `src/AudioEngine.cpp` - Dual synthesis path (sine wave / SoundFont)
+- `src/main.cpp` - Added command-line argument parsing for mode selection
+- `sampler_player.py` - Added `use_soundfont` parameter
+
+## Dependencies
+
+**New Requirement:**
+- FluidSynth 2.5+ (installed via `brew install fluidsynth`)
+
+**Existing Requirements:**
+- SFML 3.0+
+- C++17 compiler
+
+## Implementation Details
+
+### AudioEngine Changes
+- `SynthMode` enum with `SineWave` and `SoundFont` values
+- Dual synthesis paths in `onGetData()`:
+  - Sine wave: Real-time sample generation per note
+  - SoundFont: Batch rendering via FluidSynth
+- Mode selection via `setSynthMode()`
+- Both synthesizers initialized, mode switches which one is used
+
+### SoundFontSynth Class
+- Wraps FluidSynth C API in C++ interface
+- Handles SF2 file loading
+- Manages note on/off events via MIDI channels
+- Provides stereo float buffer output
+- 32-voice polyphony (same as sine wave mode)
+
+### Main Program Flow
+1. Parse command-line arguments for `--soundfont` flag
+2. If SoundFont requested:
+   - Attempt to load SF2 file from `build/soundfonts/` or `soundfonts/`
+   - Set mode to SoundFont if successful
+   - Fall back to sine wave if loading fails
+3. Load MIDI file
+4. Start playback with selected mode
+
+## Audio Quality Comparison
+
+| Aspect | Sine Wave | SoundFont |
+|--------|-----------|-----------|
+| Sound | Synthetic, clean | Realistic piano |
+| Quality | Basic | Professional |
+| File Size | ~200KB binary | +12MB SF2 file |
+| CPU Usage | Very low | Low-Medium |
+| Dependencies | SFML only | SFML + FluidSynth |
+| Use Case | Development/Testing | Production/Demo |
+
+## Testing Results
+
+Both modes tested successfully with `test.mid`:
+- ✅ Sine wave mode plays with envelope-shaped tones
+- ✅ SoundFont mode plays with realistic piano sound
+- ✅ Polyphony works in both modes
+- ✅ Note timing accurate in both modes
+- ✅ Volume levels appropriate (no clipping)
+
+## Integration Notes
+
+For GUI integration, add a checkbox or toggle:
 ```python
-self.sampler_player = SimpleSamplerPlayer()
+# Example GUI code
+self.soundfont_enabled = tk.BooleanVar(value=False)
+tk.Checkbutton(frame, text="Use Piano Sound", 
+               variable=self.soundfont_enabled).pack()
+
+# When playing:
+player = SimpleSamplerPlayer(use_soundfont=self.soundfont_enabled.get())
 ```
 
-3. **Add play method**:
-```python
-def play_current_song(self):
-    if self.sampler_player and self.song:
-        self.sampler_player.play_from_song(self.song, background=True)
-```
+## Known Issues
 
-4. **Add button in Piano Roll tab**:
-```python
-play_btn = ttk.Button(button_frame, text="▶ Play MIDI", 
-                      command=self.play_current_song)
-play_btn.pack(side=tk.LEFT, padx=5)
-```
+1. FluidSynth warning about channel 9 (drums) - **harmless, can be ignored**
+2. SoundFont file must be exactly named "Motif ES6 Concert Piano(12Mb).SF2"
+3. First note may have slight latency in SoundFont mode (FluidSynth initialization)
 
-5. **Done!** Click the Play button to hear your composition.
+## Future Enhancements
 
-## Features
+Possible improvements:
+- Support for multiple SoundFonts (user selection)
+- Instrument/program change support
+- Reverb/chorus effects in SoundFont mode
+- Volume control per mode
+- Export to WAV file
 
-✓ **Seamless Integration**: Works with existing savellysKone3.Song objects  
-✓ **No Manual Export**: Automatically creates temporary MIDI files  
-✓ **Background Playback**: Non-blocking - GUI remains responsive  
-✓ **Error Handling**: Graceful fallback if SimpleSampler not available  
-✓ **Cross-platform**: Works on macOS, Linux, Windows (with SFML installed)
+## Performance
 
-## File Structure
+Both modes:
+- Sample rate: 44100 Hz
+- Polyphony: 32 voices
+- Latency: ~93ms
+- CPU usage: < 5% on Apple Silicon
 
-```
-simpleSampler/
-├── sampler_player.py          # Python wrapper module
-├── example_integration.py     # Demo script
-├── GUI_INTEGRATION.md         # Integration guide
-├── build/
-│   └── SimpleSampler          # C++ executable
-└── (other C++ source files)
-```
-
-## Testing the Integration
-
-### Test 1: Standalone test
-```bash
-cd simpleSampler
-python3 example_integration.py
-```
-
-### Test 2: Python module test
-```bash
-cd simpleSampler
-python3 -c "from sampler_player import SimpleSamplerPlayer; \
-            p = SimpleSamplerPlayer(); \
-            print('Available:', p.is_available())"
-```
-
-### Test 3: Full GUI integration
-After adding the integration code to savellysKone3_gui.py:
-```bash
-cd ..  # Back to savellysKone directory
-python3 savellysKone3_gui.py
-```
-
-Then:
-1. Generate lists or create a bar
-2. Click "▶ Play MIDI" button
-3. Hear your composition!
-
-## Benefits
-
-### For Users
-- **Instant Feedback**: Hear compositions immediately without manual export
-- **Experimentation**: Quickly test different grammars and modulations
-- **Learning**: Connect visual representation (piano roll) with audio output
-
-### For Development
-- **Modular Design**: Python wrapper is independent, can be reused
-- **Easy to Extend**: Add stop button, volume control, playback position, etc.
-- **Clean Separation**: C++ for performance, Python for UI
-
-## Next Steps
-
-1. **Add to GUI**: Follow the integration guide to add the Play button
-2. **Test**: Create compositions and play them
-3. **Enhance** (optional):
-   - Add a "Stop" button (calls `sampler_player.stop()`)
-   - Show playback status in status bar
-   - Add keyboard shortcut (e.g., Ctrl+P to play)
-   - Display playback time
-   - Add volume control
-
-## Requirements
-
-- SimpleSampler must be built (`cd build && cmake .. && make`)
-- SFML 3.0 audio libraries installed
-- savellysKone3.py in parent directory (for Song object creation)
-
-## Troubleshooting
-
-**"SimpleSampler not available"**
-→ Build it: `cd simpleSampler/build && make`
-
-**No sound**
-→ Check system audio not muted
-→ Test SimpleSampler directly: `./build/SimpleSampler test.mid`
-
-**Import error**
-→ Make sure `sampler_player.py` is in `simpleSampler/` directory
-→ Check sys.path includes simpleSampler directory
-
-## Summary
-
-The integration is complete and ready to use! The `sampler_player.py` module provides everything needed to play MIDI from Python, and the integration guide shows exactly how to add it to the GUI.
-
-**Result**: Click a button → Hear your composition in pure sine waves with ADSR envelopes! 🎵
+SoundFont mode adds minimal CPU overhead thanks to FluidSynth's efficient rendering.

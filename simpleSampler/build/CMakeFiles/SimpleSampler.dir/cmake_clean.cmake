@@ -7,6 +7,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/SimpleSampler.dir/src/MidiParser.cpp.o.d"
   "CMakeFiles/SimpleSampler.dir/src/SineWaveSynth.cpp.o"
   "CMakeFiles/SimpleSampler.dir/src/SineWaveSynth.cpp.o.d"
+  "CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.o"
+  "CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.o.d"
   "CMakeFiles/SimpleSampler.dir/src/main.cpp.o"
   "CMakeFiles/SimpleSampler.dir/src/main.cpp.o.d"
   "SimpleSampler"

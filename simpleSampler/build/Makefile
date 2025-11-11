@@ -270,6 +270,30 @@ src/SineWaveSynth.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleSampler.dir/build.make CMakeFiles/SimpleSampler.dir/src/SineWaveSynth.cpp.s
 .PHONY : src/SineWaveSynth.cpp.s
 
+src/SoundFontSynth.o: src/SoundFontSynth.cpp.o
+.PHONY : src/SoundFontSynth.o
+
+# target to build an object file
+src/SoundFontSynth.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleSampler.dir/build.make CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.o
+.PHONY : src/SoundFontSynth.cpp.o
+
+src/SoundFontSynth.i: src/SoundFontSynth.cpp.i
+.PHONY : src/SoundFontSynth.i
+
+# target to preprocess a source file
+src/SoundFontSynth.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleSampler.dir/build.make CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.i
+.PHONY : src/SoundFontSynth.cpp.i
+
+src/SoundFontSynth.s: src/SoundFontSynth.cpp.s
+.PHONY : src/SoundFontSynth.s
+
+# target to generate assembly for a file
+src/SoundFontSynth.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleSampler.dir/build.make CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.s
+.PHONY : src/SoundFontSynth.cpp.s
+
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
 
@@ -319,6 +343,9 @@ help:
 	@echo "... src/SineWaveSynth.o"
 	@echo "... src/SineWaveSynth.i"
 	@echo "... src/SineWaveSynth.s"
+	@echo "... src/SoundFontSynth.o"
+	@echo "... src/SoundFontSynth.i"
+	@echo "... src/SoundFontSynth.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

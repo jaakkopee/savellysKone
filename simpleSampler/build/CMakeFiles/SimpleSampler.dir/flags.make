@@ -4,7 +4,7 @@
 # compile CXX with /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/include -isystem /opt/homebrew/include
+CXX_INCLUDES = -I/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/include -I/opt/homebrew/Cellar/fluid-synth/2.5.1/include -I/opt/homebrew/Cellar/glib/2.86.1/include -I/opt/homebrew/Cellar/glib/2.86.1/include/glib-2.0 -I/opt/homebrew/Cellar/glib/2.86.1/lib/glib-2.0/include -I/opt/homebrew/opt/gettext/include -I/opt/homebrew/Cellar/pcre2/10.47/include -I/opt/homebrew/Cellar/libsndfile/1.2.2_1/include -I/opt/homebrew/Cellar/flac/1.5.0/include -I/opt/homebrew/Cellar/libvorbis/1.3.7/include -I/opt/homebrew/Cellar/libogg/1.3.6/include -I/opt/homebrew/Cellar/opus/1.5.2/include/opus -I/opt/homebrew/Cellar/mpg123/1.33.3/include -I/opt/homebrew/Cellar/portaudio/19.7.0/include -I/opt/homebrew/Cellar/readline/8.3.1/include -isystem /opt/homebrew/include
 
 CXX_FLAGSarm64 = -std=gnu++17 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk
 

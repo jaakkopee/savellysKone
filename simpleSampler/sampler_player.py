@@ -12,13 +12,15 @@ import sys
 class SimpleSamplerPlayer:
     """Interface to play MIDI files with SimpleSampler"""
     
-    def __init__(self, sampler_path=None):
+    def __init__(self, sampler_path=None, use_soundfont=False, soundfont_path=None):
         """
         Initialize the SimpleSampler player.
         
         Args:
             sampler_path: Path to SimpleSampler executable. 
                          If None, assumes it's in simpleSampler/build/SimpleSampler
+            use_soundfont: If True, use SoundFont synthesis instead of sine waves
+            soundfont_path: Path to specific SoundFont file. If None, uses default.
         """
         if sampler_path is None:
             # Try to find SimpleSampler relative to this script
@@ -26,6 +28,8 @@ class SimpleSamplerPlayer:
             sampler_path = os.path.join(script_dir, 'build', 'SimpleSampler')
         
         self.sampler_path = sampler_path
+        self.use_soundfont = use_soundfont
+        self.soundfont_path = soundfont_path
         self.process = None
     
     def is_available(self):
@@ -50,12 +54,19 @@ class SimpleSamplerPlayer:
         if not os.path.isfile(midi_file_path):
             raise FileNotFoundError(f"MIDI file not found: {midi_file_path}")
         
+        # Build command
+        cmd = [self.sampler_path, midi_file_path]
+        if self.use_soundfont:
+            cmd.append('--soundfont')
+            if self.soundfont_path:
+                cmd.append(self.soundfont_path)
+        
         try:
             if background:
                 # Run in background
-                print(f"[SimpleSamplerPlayer] Starting SimpleSampler: {self.sampler_path} {midi_file_path}")
+                print(f"[SimpleSamplerPlayer] Starting SimpleSampler: {' '.join(cmd)}")
                 self.process = subprocess.Popen(
-                    [self.sampler_path, midi_file_path],
+                    cmd,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     stdin=subprocess.DEVNULL
@@ -75,9 +86,9 @@ class SimpleSamplerPlayer:
                 return self.process
             else:
                 # Wait for completion
-                print(f"[SimpleSamplerPlayer] Running SimpleSampler (foreground): {self.sampler_path} {midi_file_path}")
+                print(f"[SimpleSamplerPlayer] Running SimpleSampler (foreground): {' '.join(cmd)}")
                 result = subprocess.run(
-                    [self.sampler_path, midi_file_path],
+                    cmd,
                     capture_output=True,
                     text=True
                 )
@@ -137,7 +148,7 @@ class SimpleSamplerPlayer:
 
 # Convenience functions for direct use
 
-def play_midi(midi_file_path, sampler_path=None, background=True):
+def play_midi(midi_file_path, sampler_path=None, background=True, use_soundfont=False, soundfont_path=None):
     """
     Convenience function to play a MIDI file.
     
@@ -145,16 +156,18 @@ def play_midi(midi_file_path, sampler_path=None, background=True):
         midi_file_path: Path to MIDI file
         sampler_path: Path to SimpleSampler executable (optional)
         background: Run in background (default True)
+        use_soundfont: Use SoundFont synthesis instead of sine waves (default False)
+        soundfont_path: Path to specific SoundFont file (optional)
     
     Returns:
         SimpleSamplerPlayer instance
     """
-    player = SimpleSamplerPlayer(sampler_path)
+    player = SimpleSamplerPlayer(sampler_path, use_soundfont=use_soundfont, soundfont_path=soundfont_path)
     player.play_midi_file(midi_file_path, background=background)
     return player
 
 
-def play_song(song, sampler_path=None, background=True):
+def play_song(song, sampler_path=None, background=True, use_soundfont=False, soundfont_path=None):
     """
     Convenience function to play a savellysKone3.Song object.
     
@@ -162,11 +175,13 @@ def play_song(song, sampler_path=None, background=True):
         song: savellysKone3.Song object
         sampler_path: Path to SimpleSampler executable (optional)
         background: Run in background (default True)
+        use_soundfont: Use SoundFont synthesis instead of sine waves (default False)
+        soundfont_path: Path to specific SoundFont file (optional)
     
     Returns:
         Tuple of (temp_midi_path, SimpleSamplerPlayer instance)
     """
-    player = SimpleSamplerPlayer(sampler_path)
+    player = SimpleSamplerPlayer(sampler_path, use_soundfont=use_soundfont, soundfont_path=soundfont_path)
     temp_path, _ = player.play_from_song(song, background=background)
     return temp_path, player
 
@@ -181,6 +196,9 @@ if __name__ == "__main__":
     if sys.argv[1] == "--test":
         # Test with savellysKone3
         try:
+            # Add parent directory to path to import savellysKone3
+            parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            sys.path.insert(0, parent_dir)
             import savellysKone3 as sk3
             
             # Create a simple test song

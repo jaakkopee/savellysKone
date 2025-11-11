@@ -1040,6 +1040,25 @@ CMakeFiles/SimpleSampler.dir/src/main.cpp.o: \
   /opt/homebrew/include/SFML/System/Vector2.inl \
   /Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/include/SineWaveSynth.h \
   /Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/include/Envelope.h \
+  /Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/include/SoundFontSynth.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/types.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/settings.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/synth.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/shell.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/sfont.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/audio.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/event.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/midi.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/seq.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/seqbind.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/log.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/misc.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/mod.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/gen.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/voice.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/version.h \
+  /opt/homebrew/Cellar/fluid-synth/2.5.1/include/fluidsynth/ladspa.h \
   /Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/include/MidiParser.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include/c++/v1/iostream \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include/c++/v1/thread \

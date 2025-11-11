@@ -111,10 +111,24 @@ CMakeFiles/SimpleSampler.dir/src/SineWaveSynth.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/SimpleSampler.dir/src/SineWaveSynth.cpp.s"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/src/SineWaveSynth.cpp -o CMakeFiles/SimpleSampler.dir/src/SineWaveSynth.cpp.s
 
+CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.o: CMakeFiles/SimpleSampler.dir/flags.make
+CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.o: /Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/src/SoundFontSynth.cpp
+CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.o: CMakeFiles/SimpleSampler.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.o"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.o -MF CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.o.d -o CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.o -c /Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/src/SoundFontSynth.cpp
+
+CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.i"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/src/SoundFontSynth.cpp > CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.i
+
+CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.s"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/src/SoundFontSynth.cpp -o CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.s
+
 CMakeFiles/SimpleSampler.dir/src/Envelope.cpp.o: CMakeFiles/SimpleSampler.dir/flags.make
 CMakeFiles/SimpleSampler.dir/src/Envelope.cpp.o: /Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/src/Envelope.cpp
 CMakeFiles/SimpleSampler.dir/src/Envelope.cpp.o: CMakeFiles/SimpleSampler.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/SimpleSampler.dir/src/Envelope.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/SimpleSampler.dir/src/Envelope.cpp.o"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleSampler.dir/src/Envelope.cpp.o -MF CMakeFiles/SimpleSampler.dir/src/Envelope.cpp.o.d -o CMakeFiles/SimpleSampler.dir/src/Envelope.cpp.o -c /Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/src/Envelope.cpp
 
 CMakeFiles/SimpleSampler.dir/src/Envelope.cpp.i: cmake_force
@@ -128,7 +142,7 @@ CMakeFiles/SimpleSampler.dir/src/Envelope.cpp.s: cmake_force
 CMakeFiles/SimpleSampler.dir/src/AudioEngine.cpp.o: CMakeFiles/SimpleSampler.dir/flags.make
 CMakeFiles/SimpleSampler.dir/src/AudioEngine.cpp.o: /Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/src/AudioEngine.cpp
 CMakeFiles/SimpleSampler.dir/src/AudioEngine.cpp.o: CMakeFiles/SimpleSampler.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/SimpleSampler.dir/src/AudioEngine.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/SimpleSampler.dir/src/AudioEngine.cpp.o"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleSampler.dir/src/AudioEngine.cpp.o -MF CMakeFiles/SimpleSampler.dir/src/AudioEngine.cpp.o.d -o CMakeFiles/SimpleSampler.dir/src/AudioEngine.cpp.o -c /Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/src/AudioEngine.cpp
 
 CMakeFiles/SimpleSampler.dir/src/AudioEngine.cpp.i: cmake_force
@@ -144,6 +158,7 @@ SimpleSampler_OBJECTS = \
 "CMakeFiles/SimpleSampler.dir/src/main.cpp.o" \
 "CMakeFiles/SimpleSampler.dir/src/MidiParser.cpp.o" \
 "CMakeFiles/SimpleSampler.dir/src/SineWaveSynth.cpp.o" \
+"CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.o" \
 "CMakeFiles/SimpleSampler.dir/src/Envelope.cpp.o" \
 "CMakeFiles/SimpleSampler.dir/src/AudioEngine.cpp.o"
 
@@ -153,13 +168,14 @@ SimpleSampler_EXTERNAL_OBJECTS =
 SimpleSampler: CMakeFiles/SimpleSampler.dir/src/main.cpp.o
 SimpleSampler: CMakeFiles/SimpleSampler.dir/src/MidiParser.cpp.o
 SimpleSampler: CMakeFiles/SimpleSampler.dir/src/SineWaveSynth.cpp.o
+SimpleSampler: CMakeFiles/SimpleSampler.dir/src/SoundFontSynth.cpp.o
 SimpleSampler: CMakeFiles/SimpleSampler.dir/src/Envelope.cpp.o
 SimpleSampler: CMakeFiles/SimpleSampler.dir/src/AudioEngine.cpp.o
 SimpleSampler: CMakeFiles/SimpleSampler.dir/build.make
 SimpleSampler: /opt/homebrew/lib/libsfml-audio.3.0.2.dylib
 SimpleSampler: /opt/homebrew/lib/libsfml-system.3.0.2.dylib
 SimpleSampler: CMakeFiles/SimpleSampler.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable SimpleSampler"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/jaakkoprattala/Documents/koodii/savellysKone/simpleSampler/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable SimpleSampler"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/SimpleSampler.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
