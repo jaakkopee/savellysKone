@@ -1854,6 +1854,17 @@ $vel08 -> 110"""
                                  "or use the List Generator to generate grammars.")
             return
         
+        # Show warning about MIDI playback issue
+        response = messagebox.askyesno(
+            "MIDI Playback Warning",
+            "Playing MIDI is broken. Render MIDI and open the .mid file in your DAW.\n\n"
+            "Do you want to play anyway?",
+            icon='warning'
+        )
+        
+        if not response:  # User clicked "No" (Cancel)
+            return
+        
         try:
             # Path to SimpleSampler
             sampler_path = os.path.join(os.path.dirname(__file__), 
