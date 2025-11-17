@@ -157,12 +157,12 @@ class GrammarValidator:
                 f"Non-terminal '{nt}' is non-productive (cannot derive terminal strings)"
             )
         
-        # Detect potential indirect left recursion
-        cycles = self._detect_cycles()
-        if cycles:
-            for cycle in cycles:
+        # Detect potential indirect left recursion (only left recursion is problematic)
+        left_recursive_cycles = self._detect_left_recursive_cycles()
+        if left_recursive_cycles:
+            for cycle in left_recursive_cycles:
                 cycle_str = ' -> '.join(cycle + [cycle[0]])
-                self.warnings.append(f"Potential indirect recursion detected: {cycle_str}")
+                self.warnings.append(f"Potential indirect left recursion detected: {cycle_str}")
     
     def _find_reachable(self, start: str) -> Set[str]:
         """Find all non-terminals reachable from start symbol"""
@@ -200,15 +200,21 @@ class GrammarValidator:
         
         return self.non_terminals - productive
     
-    def _detect_cycles(self) -> List[List[str]]:
-        """Detect cycles in the grammar (potential indirect left recursion)"""
+    def _detect_left_recursive_cycles(self) -> List[List[str]]:
+        """
+        Detect cycles that involve left recursion (problematic).
+        Only reports cycles where the non-terminal appears as the FIRST symbol.
+        Right recursion (non-terminal at end) is valid and not reported.
+        """
         cycles = []
         
         def dfs(current: str, path: List[str], visited: Set[str]):
             if current in path:
-                # Found a cycle
+                # Found a cycle - check if it's left-recursive
                 cycle_start = path.index(current)
                 cycle = path[cycle_start:]
+                
+                # Only report if not already found
                 if cycle not in cycles:
                     cycles.append(cycle)
                 return
@@ -218,7 +224,8 @@ class GrammarValidator:
             
             path.append(current)
             
-            # Follow first symbols in productions
+            # ONLY follow FIRST symbols in productions (left recursion check)
+            # Right recursion (symbol appears later) is fine and won't be followed
             for symbols in self.rules[current]:
                 if symbols and symbols[0].startswith('$'):
                     dfs(symbols[0], path.copy(), visited)

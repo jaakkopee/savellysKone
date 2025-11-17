@@ -37,10 +37,12 @@ def parse_grammar(f):
             alternatives = [alt.strip() for alt in alternatives]
             for alternative in alternatives:
                 # Check for direct left recursion: LHS cannot be the first symbol on RHS
+                # Note: Right recursion (LHS at end) is valid and allowed
                 rhs_first_symbol = alternative.split()[0] if alternative.split() else ""
                 if rhs_first_symbol == lhs:
-                    raise ValueError(f"Infinite recursion detected: '{lhs} -> {alternative}'. "
-                                   f"The non-terminal '{lhs}' cannot appear as the first symbol on the right side of its own rule.")
+                    raise ValueError(f"Direct left recursion detected: '{lhs} -> {alternative}'. "
+                                   f"The non-terminal '{lhs}' cannot appear as the first symbol on the right side of its own rule. "
+                                   f"(Note: Right recursion like '{lhs} -> other_symbols {lhs}' is allowed)")
                 grammar.add_rule(GrammarRule(lhs, alternative))
     if DEBUG:
         print(grammar)
