@@ -13,6 +13,7 @@ import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox, filedialog
 import savellysKone3 as sk3
 import midi_parser
+import grammar_validator
 import os
 import tempfile
 import sys
@@ -462,6 +463,12 @@ Created with Python and Tkinter
             self.pitch_grammar_text = scrolledtext.ScrolledText(grammar_frame, height=10, width=80)
             self.pitch_grammar_text.pack(fill='both', expand=True, pady=5)
             
+            # Add validation button
+            validate_frame = ttk.Frame(grammar_frame)
+            validate_frame.pack(fill='x', pady=2)
+            ttk.Button(validate_frame, text="Validate Grammar", 
+                      command=lambda: self.validate_grammar("pitch")).pack(side='left', padx=5)
+            
             # Set default pitch grammar
             default_grammar = """$S -> $phrase01 $phrase02
 $phrase01 -> $note01 $note02 $note03 $note04
@@ -480,6 +487,12 @@ $note08 -> 72"""
             self.duration_grammar_text = scrolledtext.ScrolledText(grammar_frame, height=10, width=80)
             self.duration_grammar_text.pack(fill='both', expand=True, pady=5)
             
+            # Add validation button
+            validate_frame = ttk.Frame(grammar_frame)
+            validate_frame.pack(fill='x', pady=2)
+            ttk.Button(validate_frame, text="Validate Grammar", 
+                      command=lambda: self.validate_grammar("duration")).pack(side='left', padx=5)
+            
             # Set default duration grammar
             default_grammar = """$S -> $phrase01 $phrase02
 $phrase01 -> $dur01 $dur02 $dur03 $dur04
@@ -497,6 +510,12 @@ $dur08 -> 1.0"""
         else:  # velocity
             self.velocity_grammar_text = scrolledtext.ScrolledText(grammar_frame, height=10, width=80)
             self.velocity_grammar_text.pack(fill='both', expand=True, pady=5)
+            
+            # Add validation button
+            validate_frame = ttk.Frame(grammar_frame)
+            validate_frame.pack(fill='x', pady=2)
+            ttk.Button(validate_frame, text="Validate Grammar", 
+                      command=lambda: self.validate_grammar("velocity")).pack(side='left', padx=5)
             
             # Set default velocity grammar - matches Bar Manipulation default
             default_grammar = """$S -> $phrase01 $phrase02
@@ -841,6 +860,35 @@ $vel08 -> 110"""
             
         except Exception as e:
             messagebox.showerror("Error", f"Error using generated lists: {str(e)}")
+    
+    def validate_grammar(self, grammar_type):
+        """Validate a grammar and show results"""
+        try:
+            # Get the grammar text
+            if grammar_type == "pitch":
+                grammar_text = self.pitch_grammar_text.get('1.0', 'end-1c')
+            elif grammar_type == "duration":
+                grammar_text = self.duration_grammar_text.get('1.0', 'end-1c')
+            else:  # velocity
+                grammar_text = self.velocity_grammar_text.get('1.0', 'end-1c')
+            
+            # Validate using the grammar validator
+            is_valid, message = grammar_validator.validate_grammar(grammar_text)
+            
+            # Show results in a message box
+            if is_valid:
+                messagebox.showinfo(
+                    f"{grammar_type.capitalize()} Grammar Validation", 
+                    message
+                )
+            else:
+                messagebox.showwarning(
+                    f"{grammar_type.capitalize()} Grammar Validation Failed", 
+                    message
+                )
+                
+        except Exception as e:
+            messagebox.showerror("Validation Error", f"Error validating grammar:\n\n{str(e)}")
     
     def create_bar(self):
         """Create a Bar object"""
