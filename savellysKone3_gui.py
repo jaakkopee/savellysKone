@@ -1387,13 +1387,13 @@ $vel08 -> 110"""
         movement_frame = ttk.LabelFrame(tab, text="Reorder Selected Bar", padding=10)
         movement_frame.pack(fill='x', padx=10, pady=5)
         
-        ttk.Button(movement_frame, text="◄ Move to Beginning", 
+        ttk.Button(movement_frame, text="▲ Move to Beginning", 
                    command=self.move_bar_to_beginning).pack(side='left', padx=5)
-        ttk.Button(movement_frame, text="← Move Left", 
-                   command=self.move_bar_left).pack(side='left', padx=5)
-        ttk.Button(movement_frame, text="Move Right →", 
-                   command=self.move_bar_right).pack(side='left', padx=5)
-        ttk.Button(movement_frame, text="Move to End ►", 
+        ttk.Button(movement_frame, text="↑ Move Up", 
+                   command=self.move_bar_up).pack(side='left', padx=5)
+        ttk.Button(movement_frame, text="Move Down ↓", 
+                   command=self.move_bar_down).pack(side='left', padx=5)
+        ttk.Button(movement_frame, text="Move to End ▼", 
                    command=self.move_bar_to_end).pack(side='left', padx=5)
         ttk.Button(movement_frame, text="Remove Selected", 
                    command=self.remove_selected_bar).pack(side='left', padx=20)
@@ -1478,8 +1478,8 @@ $vel08 -> 110"""
                     f"Note {i+1:3d}: Pitch={note.pitch:3d}, Onset={note.onset:7.3f}, "
                     f"Duration={note.duration:5.3f}, Velocity={note.velocity:3d}\n")
     
-    def move_bar_left(self):
-        """Move selected bar one position to the left"""
+    def move_bar_up(self):
+        """Move selected bar one position up (earlier in list)"""
         selection = self.collection_listbox.curselection()
         if not selection:
             messagebox.showwarning("No Selection", "Please select a bar to move.")
@@ -1499,8 +1499,8 @@ $vel08 -> 110"""
         self.collection_listbox.selection_set(index-1)
         self.collection_listbox.see(index-1)
     
-    def move_bar_right(self):
-        """Move selected bar one position to the right"""
+    def move_bar_down(self):
+        """Move selected bar one position down (later in list)"""
         selection = self.collection_listbox.curselection()
         if not selection:
             messagebox.showwarning("No Selection", "Please select a bar to move.")
