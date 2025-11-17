@@ -368,6 +368,26 @@ class Song:
         if self.bar_collection is not None:
             print(f"DEBUG make_bar_list: Using BarCollection with {len(self.bar_collection.bars)} bars")
             self.bar_list = self.bar_collection.bars.copy()
+            
+            # Recalculate bar onsets so each bar starts where the previous one ends
+            onset = 0
+            for i, bar in enumerate(self.bar_list):
+                old_onset = bar.bar_onset
+                bar.bar_onset = onset
+                
+                # Update all note onsets in the bar
+                onset_delta = onset - old_onset
+                for note in bar.note_list:
+                    note.onset += onset_delta
+                
+                # Calculate where next bar should start (end of current bar)
+                if bar.note_list:
+                    last_note_onset = bar.note_list[-1].onset
+                    onset = last_note_onset + bar.ioi
+                    print(f"  Bar {i}: onset={bar.bar_onset:.3f}, last_note={last_note_onset:.3f}, next_onset={onset:.3f}")
+                else:
+                    print(f"  Bar {i}: empty bar, onset={onset}")
+            
             return
         
         # Otherwise, generate bars as usual
