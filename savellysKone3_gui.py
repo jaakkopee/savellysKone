@@ -601,8 +601,24 @@ $vel08 -> 110"""
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text="Bar Manipulation")
         
+        # Create a canvas with scrollbar for the tab content
+        canvas = tk.Canvas(tab)
+        scrollbar = ttk.Scrollbar(tab, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
         # Bar creation section
-        creation_frame = ttk.LabelFrame(tab, text="Create Bar", padding=10)
+        creation_frame = ttk.LabelFrame(scrollable_frame, text="Create Bar", padding=10)
         creation_frame.pack(fill='x', padx=10, pady=5)
         
         # Pitch list input
@@ -668,7 +684,7 @@ $vel08 -> 110"""
                    command=self.add_bar_to_collection).pack(side='left', padx=5)
         
         # Bar operations section
-        operations_frame = ttk.LabelFrame(tab, text="Bar Operations", padding=10)
+        operations_frame = ttk.LabelFrame(scrollable_frame, text="Bar Operations", padding=10)
         operations_frame.pack(fill='x', padx=10, pady=5)
         
         # Transpose operation
@@ -705,7 +721,7 @@ $vel08 -> 110"""
                    command=self.random_onsets).pack(side='left', padx=5)
         
         # Bar modulation section
-        modulation_frame = ttk.LabelFrame(tab, text="Bar Modulation (Sine Wave)", padding=10)
+        modulation_frame = ttk.LabelFrame(scrollable_frame, text="Bar Modulation (Sine Wave)", padding=10)
         modulation_frame.pack(fill='x', padx=10, pady=5)
         
         # Modulation parameters frame
@@ -739,11 +755,14 @@ $vel08 -> 110"""
                    command=self.bar_modulate_onset).pack(side='left', padx=5)
         
         # Bar display section
-        display_frame = ttk.LabelFrame(tab, text="Current Bar", padding=10)
+        display_frame = ttk.LabelFrame(scrollable_frame, text="Current Bar", padding=10)
         display_frame.pack(fill='both', expand=True, padx=10, pady=5)
         
-        self.bar_display = scrolledtext.ScrolledText(display_frame, height=15, width=80)
+        self.bar_display = scrolledtext.ScrolledText(display_frame, height=10, width=80, wrap='none')
         self.bar_display.pack(fill='both', expand=True)
+        
+        # Initialize with a message
+        self.bar_display.insert('1.0', "No bar created yet.\n\nCreate a bar using the controls above to see its details here.")
         
         # Bar export section
         bar_export_frame = ttk.Frame(display_frame)
@@ -1059,7 +1078,8 @@ $vel08 -> 110"""
                 print(f"Bar creation: Using circular buffer (pitch:{len(pitch_list)}, duration:{len(duration_list)}, velocity:{len(velocity_list)})")
             
             # Get parameters
-            onset = float(self.onset_var.get())
+            onset_str = self.onset_var.get().strip()
+            onset = float(onset_str) if onset_str else 0.0
             ioi = float(self.ioi_var.get())
             
             # Get number of notes (optional)
@@ -1549,15 +1569,55 @@ $vel08 -> 110"""
             # Add a copy of the current bar to the collection
             import copy
             bar_copy = copy.deepcopy(self.current_bar)
+            
+            # Determine the onset for this bar
+            onset_str = self.onset_var.get().strip()
+            
+            if onset_str:
+                # User specified an onset - use it as is
+                new_onset = float(onset_str)
+                print(f"Using user-specified onset: {new_onset}")
+            else:
+                # Onset field is empty - calculate automatically based on collection
+                if len(self.bar_collection.bars) == 0:
+                    # First bar - start at 0
+                    new_onset = 0.0
+                    print(f"First bar in collection, using onset: {new_onset}")
+                else:
+                    # Calculate onset based on where the last bar ends
+                    last_bar = self.bar_collection.bars[-1]
+                    if last_bar.note_list:
+                        last_note_onset = last_bar.note_list[-1].onset
+                        new_onset = last_note_onset + last_bar.ioi
+                    else:
+                        new_onset = last_bar.bar_onset
+                    print(f"Auto-calculated onset: {new_onset} (after last bar)")
+            
+            # Update the bar copy's onset and all its notes
+            onset_delta = new_onset - bar_copy.bar_onset
+            bar_copy.bar_onset = new_onset
+            for note in bar_copy.note_list:
+                note.onset += onset_delta
+            
             self.bar_collection.add_bar(bar_copy)
+            
+            # Update the onset field to show the next automatic onset
+            if bar_copy.note_list:
+                last_note_onset = bar_copy.note_list[-1].onset
+                next_onset = last_note_onset + bar_copy.ioi
+            else:
+                next_onset = bar_copy.bar_onset + bar_copy.ioi
+            self.onset_var.set(f"{next_onset:.2f}")
             
             # Update display
             self.refresh_collection_display()
             
             # Update status
-            self.update_status(f"Bar added to collection ({len(self.bar_collection.bars)} bars total)")
-            messagebox.showinfo("Success", f"Bar added to collection!\nTotal bars: {len(self.bar_collection.bars)}")
+            self.update_status(f"Bar added to collection at onset {new_onset:.2f} ({len(self.bar_collection.bars)} bars total)")
+            messagebox.showinfo("Success", f"Bar added to collection at onset {new_onset:.2f}!\nTotal bars: {len(self.bar_collection.bars)}\nNext onset auto-set to: {next_onset:.2f}")
             
+        except ValueError as e:
+            messagebox.showerror("Error", f"Invalid onset value: {str(e)}")
         except Exception as e:
             messagebox.showerror("Error", f"Error adding bar to collection: {str(e)}")
     
