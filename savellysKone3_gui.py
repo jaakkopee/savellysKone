@@ -704,6 +704,40 @@ $vel08 -> 110"""
         ttk.Button(button_frame, text="Random Onsets", 
                    command=self.random_onsets).pack(side='left', padx=5)
         
+        # Bar modulation section
+        modulation_frame = ttk.LabelFrame(tab, text="Bar Modulation (Sine Wave)", padding=10)
+        modulation_frame.pack(fill='x', padx=10, pady=5)
+        
+        # Modulation parameters frame
+        mod_params_frame = ttk.Frame(modulation_frame)
+        mod_params_frame.pack(fill='x', pady=2)
+        
+        ttk.Label(mod_params_frame, text="Frequency:").pack(side='left', padx=5)
+        self.bar_mod_freq_var = tk.StringVar(value="1.0")
+        ttk.Entry(mod_params_frame, textvariable=self.bar_mod_freq_var, width=10).pack(side='left', padx=5)
+        
+        ttk.Label(mod_params_frame, text="Amplitude:").pack(side='left', padx=5)
+        self.bar_mod_amp_var = tk.StringVar(value="5.0")
+        ttk.Entry(mod_params_frame, textvariable=self.bar_mod_amp_var, width=10).pack(side='left', padx=5)
+        
+        # Phase behavior
+        self.bar_mod_phase_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(mod_params_frame, text="Reset phase at bar onset", 
+                       variable=self.bar_mod_phase_var).pack(side='left', padx=10)
+        
+        # Modulation buttons
+        mod_buttons_frame = ttk.Frame(modulation_frame)
+        mod_buttons_frame.pack(fill='x', pady=5)
+        
+        ttk.Button(mod_buttons_frame, text="Modulate Pitch", 
+                   command=self.bar_modulate_pitch).pack(side='left', padx=5)
+        ttk.Button(mod_buttons_frame, text="Modulate Duration", 
+                   command=self.bar_modulate_duration).pack(side='left', padx=5)
+        ttk.Button(mod_buttons_frame, text="Modulate Velocity", 
+                   command=self.bar_modulate_velocity).pack(side='left', padx=5)
+        ttk.Button(mod_buttons_frame, text="Modulate Onset", 
+                   command=self.bar_modulate_onset).pack(side='left', padx=5)
+        
         # Bar display section
         display_frame = ttk.LabelFrame(tab, text="Current Bar", padding=10)
         display_frame.pack(fill='both', expand=True, padx=10, pady=5)
@@ -1275,6 +1309,106 @@ $vel08 -> 110"""
             messagebox.showinfo("Success", "Random onset variations applied!")
         except Exception as e:
             messagebox.showerror("Error", f"Error applying random onsets: {str(e)}")
+    
+    def bar_modulate_pitch(self):
+        """Apply sine wave modulation to pitch"""
+        if self.current_bar is None:
+            messagebox.showwarning("Warning", "Please create a bar first!")
+            return
+        
+        try:
+            freq = float(self.bar_mod_freq_var.get())
+            amp = float(self.bar_mod_amp_var.get())
+            phase_reset = self.bar_mod_phase_var.get()
+            
+            if phase_reset:
+                self.current_bar.modulate_pitch_with_sin_phase_by_bar(freq, amp)
+            else:
+                self.current_bar.modulate_pitch_with_sin(freq, amp)
+            
+            self.update_song_from_bar()  # Update song if it exists
+            self.display_bar()
+            phase_type = "phase-by-bar" if phase_reset else "absolute"
+            messagebox.showinfo("Success", f"Pitch modulation applied! (freq={freq}, amp={amp}, {phase_type})")
+        except ValueError:
+            messagebox.showerror("Error", "Invalid frequency or amplitude value!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error applying pitch modulation: {str(e)}")
+    
+    def bar_modulate_duration(self):
+        """Apply sine wave modulation to duration"""
+        if self.current_bar is None:
+            messagebox.showwarning("Warning", "Please create a bar first!")
+            return
+        
+        try:
+            freq = float(self.bar_mod_freq_var.get())
+            amp = float(self.bar_mod_amp_var.get())
+            phase_reset = self.bar_mod_phase_var.get()
+            
+            if phase_reset:
+                self.current_bar.modulate_duration_with_sin_phase_by_bar(freq, amp)
+            else:
+                self.current_bar.modulate_duration_with_sin(freq, amp)
+            
+            self.update_song_from_bar()  # Update song if it exists
+            self.display_bar()
+            phase_type = "phase-by-bar" if phase_reset else "absolute"
+            messagebox.showinfo("Success", f"Duration modulation applied! (freq={freq}, amp={amp}, {phase_type})")
+        except ValueError:
+            messagebox.showerror("Error", "Invalid frequency or amplitude value!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error applying duration modulation: {str(e)}")
+    
+    def bar_modulate_velocity(self):
+        """Apply sine wave modulation to velocity"""
+        if self.current_bar is None:
+            messagebox.showwarning("Warning", "Please create a bar first!")
+            return
+        
+        try:
+            freq = float(self.bar_mod_freq_var.get())
+            amp = float(self.bar_mod_amp_var.get())
+            phase_reset = self.bar_mod_phase_var.get()
+            
+            if phase_reset:
+                self.current_bar.modulate_velocity_with_sin_phase_by_bar(freq, amp)
+            else:
+                self.current_bar.modulate_velocity_with_sin(freq, amp)
+            
+            self.update_song_from_bar()  # Update song if it exists
+            self.display_bar()
+            phase_type = "phase-by-bar" if phase_reset else "absolute"
+            messagebox.showinfo("Success", f"Velocity modulation applied! (freq={freq}, amp={amp}, {phase_type})")
+        except ValueError:
+            messagebox.showerror("Error", "Invalid frequency or amplitude value!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error applying velocity modulation: {str(e)}")
+    
+    def bar_modulate_onset(self):
+        """Apply sine wave modulation to onset"""
+        if self.current_bar is None:
+            messagebox.showwarning("Warning", "Please create a bar first!")
+            return
+        
+        try:
+            freq = float(self.bar_mod_freq_var.get())
+            amp = float(self.bar_mod_amp_var.get())
+            phase_reset = self.bar_mod_phase_var.get()
+            
+            if phase_reset:
+                self.current_bar.modulate_onset_with_sin_phase_by_bar(freq, amp)
+            else:
+                self.current_bar.modulate_onset_with_sin(freq, amp)
+            
+            self.update_song_from_bar()  # Update song if it exists
+            self.display_bar()
+            phase_type = "phase-by-bar" if phase_reset else "absolute"
+            messagebox.showinfo("Success", f"Onset modulation applied! (freq={freq}, amp={amp}, {phase_type})")
+        except ValueError:
+            messagebox.showerror("Error", "Invalid frequency or amplitude value!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error applying onset modulation: {str(e)}")
     
     def export_bar_to_midi(self):
         """Export the current bar to a MIDI file"""
