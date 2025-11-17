@@ -317,6 +317,7 @@ class SavellysKoneGUI:
         self.current_bar = None
         self.current_song = None
         self.piano_roll = None
+        self.bar_collection = sk3.BarCollection()  # Initialize BarCollection
         
         # Variables to store generated lists
         self.generated_pitch_list = None
@@ -337,6 +338,7 @@ class SavellysKoneGUI:
         # Create tabs
         self.create_list_generator_tab()
         self.create_bar_manipulation_tab()
+        self.create_bar_collection_tab()
         self.create_song_modulation_tab()
         self.create_piano_roll_tab()
         
@@ -656,8 +658,14 @@ $vel08 -> 110"""
         ttk.Radiobutton(list_behavior_frame, text="Loop to longest", 
                        variable=self.bar_list_behavior_var, value="loop_longest").pack(side='left', padx=5)
         
-        ttk.Button(creation_frame, text="Create Bar", 
-                   command=self.create_bar).pack(pady=5)
+        # Buttons frame for Create Bar and Add to Collection
+        buttons_frame = ttk.Frame(creation_frame)
+        buttons_frame.pack(pady=5)
+        
+        ttk.Button(buttons_frame, text="Create Bar", 
+                   command=self.create_bar).pack(side='left', padx=5)
+        ttk.Button(buttons_frame, text="Add to Collection", 
+                   command=self.add_bar_to_collection).pack(side='left', padx=5)
         
         # Bar operations section
         operations_frame = ttk.LabelFrame(tab, text="Bar Operations", padding=10)
@@ -1337,6 +1345,281 @@ $vel08 -> 110"""
         except Exception as e:
             messagebox.showerror("Error", f"Error validating bar: {str(e)}")
     
+    def create_bar_collection_tab(self):
+        """Create the Bar Collection tab for managing multiple bars"""
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="Bar Collection")
+        
+        # Top frame for controls
+        controls_frame = ttk.Frame(tab)
+        controls_frame.pack(fill='x', padx=10, pady=5)
+        
+        # Collection info
+        info_frame = ttk.LabelFrame(controls_frame, text="Collection Info", padding=5)
+        info_frame.pack(fill='x', pady=5)
+        
+        self.collection_info_label = ttk.Label(info_frame, text="Collection: 0 bars")
+        self.collection_info_label.pack(side='left', padx=10)
+        
+        ttk.Button(info_frame, text="Refresh", 
+                   command=self.refresh_collection_display).pack(side='left', padx=5)
+        ttk.Button(info_frame, text="Clear All", 
+                   command=self.clear_collection).pack(side='left', padx=5)
+        ttk.Button(info_frame, text="Export to MIDI", 
+                   command=self.export_collection_to_midi).pack(side='left', padx=5)
+        
+        # Listbox frame for bars with scrollbar
+        list_frame = ttk.LabelFrame(tab, text="Bars in Collection", padding=10)
+        list_frame.pack(fill='both', expand=True, padx=10, pady=5)
+        
+        # Create listbox with scrollbar
+        scrollbar = ttk.Scrollbar(list_frame, orient='vertical')
+        self.collection_listbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set,
+                                              height=15, font=('Courier', 10))
+        scrollbar.config(command=self.collection_listbox.yview)
+        scrollbar.pack(side='right', fill='y')
+        self.collection_listbox.pack(side='left', fill='both', expand=True)
+        
+        # Bind selection event
+        self.collection_listbox.bind('<<ListboxSelect>>', self.on_collection_select)
+        
+        # Movement controls frame
+        movement_frame = ttk.LabelFrame(tab, text="Reorder Selected Bar", padding=10)
+        movement_frame.pack(fill='x', padx=10, pady=5)
+        
+        ttk.Button(movement_frame, text="◄ Move to Beginning", 
+                   command=self.move_bar_to_beginning).pack(side='left', padx=5)
+        ttk.Button(movement_frame, text="← Move Left", 
+                   command=self.move_bar_left).pack(side='left', padx=5)
+        ttk.Button(movement_frame, text="Move Right →", 
+                   command=self.move_bar_right).pack(side='left', padx=5)
+        ttk.Button(movement_frame, text="Move to End ►", 
+                   command=self.move_bar_to_end).pack(side='left', padx=5)
+        ttk.Button(movement_frame, text="Remove Selected", 
+                   command=self.remove_selected_bar).pack(side='left', padx=20)
+        
+        # Bar details display
+        details_frame = ttk.LabelFrame(tab, text="Selected Bar Details", padding=10)
+        details_frame.pack(fill='both', expand=True, padx=10, pady=5)
+        
+        self.collection_bar_display = scrolledtext.ScrolledText(details_frame, height=10, width=80)
+        self.collection_bar_display.pack(fill='both', expand=True)
+    
+    def add_bar_to_collection(self):
+        """Add the current bar to the collection"""
+        if self.current_bar is None:
+            messagebox.showwarning("No Bar", "Please create a bar first before adding to collection.")
+            return
+        
+        try:
+            # Add a copy of the current bar to the collection
+            import copy
+            bar_copy = copy.deepcopy(self.current_bar)
+            self.bar_collection.add_bar(bar_copy)
+            
+            # Update display
+            self.refresh_collection_display()
+            
+            # Update status
+            self.update_status(f"Bar added to collection ({len(self.bar_collection.bars)} bars total)")
+            messagebox.showinfo("Success", f"Bar added to collection!\nTotal bars: {len(self.bar_collection.bars)}")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Error adding bar to collection: {str(e)}")
+    
+    def refresh_collection_display(self):
+        """Refresh the collection listbox display"""
+        self.collection_listbox.delete(0, tk.END)
+        
+        for i, bar in enumerate(self.bar_collection.bars):
+            # Create a summary line for each bar
+            num_notes = len(bar.note_list)
+            onset = bar.bar_onset
+            ioi = bar.ioi
+            duration = ioi * num_notes if num_notes > 0 else 0
+            
+            # Get pitch range
+            if num_notes > 0:
+                pitches = [note.pitch for note in bar.note_list]
+                pitch_min = min(pitches)
+                pitch_max = max(pitches)
+                pitch_range = f"{pitch_min}-{pitch_max}"
+            else:
+                pitch_range = "N/A"
+            
+            summary = f"Bar {i+1:2d}: {num_notes:3d} notes | Onset: {onset:6.2f} | IOI: {ioi:.3f} | Dur: {duration:6.2f} | Pitch: {pitch_range}"
+            self.collection_listbox.insert(tk.END, summary)
+        
+        # Update collection info label
+        self.collection_info_label.config(text=f"Collection: {len(self.bar_collection.bars)} bars")
+    
+    def on_collection_select(self, event):
+        """Handle selection of a bar in the collection listbox"""
+        selection = self.collection_listbox.curselection()
+        if not selection:
+            return
+        
+        index = selection[0]
+        if 0 <= index < len(self.bar_collection.bars):
+            bar = self.bar_collection.bars[index]
+            
+            # Display bar details
+            self.collection_bar_display.delete('1.0', tk.END)
+            self.collection_bar_display.insert('1.0', f"=== Bar {index + 1} Details ===\n\n")
+            self.collection_bar_display.insert('end', f"Onset: {bar.bar_onset}\n")
+            self.collection_bar_display.insert('end', f"IOI: {bar.ioi}\n")
+            self.collection_bar_display.insert('end', f"Number of notes: {len(bar.note_list)}\n\n")
+            
+            self.collection_bar_display.insert('end', "Notes:\n")
+            self.collection_bar_display.insert('end', "-" * 60 + "\n")
+            
+            for i, note in enumerate(bar.note_list):
+                self.collection_bar_display.insert('end', 
+                    f"Note {i+1:3d}: Pitch={note.pitch:3d}, Onset={note.onset:7.3f}, "
+                    f"Duration={note.duration:5.3f}, Velocity={note.velocity:3d}\n")
+    
+    def move_bar_left(self):
+        """Move selected bar one position to the left"""
+        selection = self.collection_listbox.curselection()
+        if not selection:
+            messagebox.showwarning("No Selection", "Please select a bar to move.")
+            return
+        
+        index = selection[0]
+        if index == 0:
+            messagebox.showinfo("Info", "Bar is already at the beginning.")
+            return
+        
+        # Swap bars
+        self.bar_collection.bars[index], self.bar_collection.bars[index-1] = \
+            self.bar_collection.bars[index-1], self.bar_collection.bars[index]
+        
+        # Refresh and select the moved bar
+        self.refresh_collection_display()
+        self.collection_listbox.selection_set(index-1)
+        self.collection_listbox.see(index-1)
+    
+    def move_bar_right(self):
+        """Move selected bar one position to the right"""
+        selection = self.collection_listbox.curselection()
+        if not selection:
+            messagebox.showwarning("No Selection", "Please select a bar to move.")
+            return
+        
+        index = selection[0]
+        if index >= len(self.bar_collection.bars) - 1:
+            messagebox.showinfo("Info", "Bar is already at the end.")
+            return
+        
+        # Swap bars
+        self.bar_collection.bars[index], self.bar_collection.bars[index+1] = \
+            self.bar_collection.bars[index+1], self.bar_collection.bars[index]
+        
+        # Refresh and select the moved bar
+        self.refresh_collection_display()
+        self.collection_listbox.selection_set(index+1)
+        self.collection_listbox.see(index+1)
+    
+    def move_bar_to_beginning(self):
+        """Move selected bar to the beginning of the collection"""
+        selection = self.collection_listbox.curselection()
+        if not selection:
+            messagebox.showwarning("No Selection", "Please select a bar to move.")
+            return
+        
+        index = selection[0]
+        if index == 0:
+            messagebox.showinfo("Info", "Bar is already at the beginning.")
+            return
+        
+        # Move bar to beginning
+        bar = self.bar_collection.bars.pop(index)
+        self.bar_collection.bars.insert(0, bar)
+        
+        # Refresh and select the moved bar
+        self.refresh_collection_display()
+        self.collection_listbox.selection_set(0)
+        self.collection_listbox.see(0)
+    
+    def move_bar_to_end(self):
+        """Move selected bar to the end of the collection"""
+        selection = self.collection_listbox.curselection()
+        if not selection:
+            messagebox.showwarning("No Selection", "Please select a bar to move.")
+            return
+        
+        index = selection[0]
+        last_index = len(self.bar_collection.bars) - 1
+        if index == last_index:
+            messagebox.showinfo("Info", "Bar is already at the end.")
+            return
+        
+        # Move bar to end
+        bar = self.bar_collection.bars.pop(index)
+        self.bar_collection.bars.append(bar)
+        
+        # Refresh and select the moved bar
+        self.refresh_collection_display()
+        self.collection_listbox.selection_set(last_index)
+        self.collection_listbox.see(last_index)
+    
+    def remove_selected_bar(self):
+        """Remove the selected bar from the collection"""
+        selection = self.collection_listbox.curselection()
+        if not selection:
+            messagebox.showwarning("No Selection", "Please select a bar to remove.")
+            return
+        
+        index = selection[0]
+        
+        # Confirm removal
+        result = messagebox.askyesno("Confirm Removal", 
+                                      f"Remove Bar {index+1} from collection?")
+        if result:
+            self.bar_collection.remove_bar(index)
+            self.refresh_collection_display()
+            self.collection_bar_display.delete('1.0', tk.END)
+            self.update_status(f"Bar {index+1} removed from collection")
+    
+    def clear_collection(self):
+        """Clear all bars from the collection"""
+        if len(self.bar_collection.bars) == 0:
+            messagebox.showinfo("Empty", "Collection is already empty.")
+            return
+        
+        result = messagebox.askyesno("Confirm Clear", 
+                                      f"Remove all {len(self.bar_collection.bars)} bars from collection?")
+        if result:
+            self.bar_collection.clear()
+            self.refresh_collection_display()
+            self.collection_bar_display.delete('1.0', tk.END)
+            self.update_status("Collection cleared")
+    
+    def export_collection_to_midi(self):
+        """Export the bar collection to a MIDI file"""
+        if len(self.bar_collection.bars) == 0:
+            messagebox.showwarning("Empty Collection", "No bars in collection to export.")
+            return
+        
+        try:
+            # Ask for filename
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".mid",
+                filetypes=[("MIDI files", "*.mid"), ("All files", "*.*")],
+                title="Export Bar Collection to MIDI"
+            )
+            
+            if filename:
+                # Export to MIDI
+                self.bar_collection.make_midi_file(filename, "BarCollection")
+                self.update_status(f"Collection exported to {os.path.basename(filename)}")
+                messagebox.showinfo("Success", 
+                                    f"Bar collection exported successfully!\n"
+                                    f"File: {os.path.basename(filename)}\n"
+                                    f"Bars: {len(self.bar_collection.bars)}")
+        except Exception as e:
+            messagebox.showerror("Export Error", f"Error exporting collection: {str(e)}")
+    
     def create_song_modulation_tab(self):
         """Create the Song Modulation tab for sine modulation functions"""
         tab = ttk.Frame(self.notebook)
@@ -1389,8 +1672,14 @@ $vel08 -> 110"""
         self.song_ioi_var = tk.StringVar(value="0.75")
         ttk.Entry(params_frame, textvariable=self.song_ioi_var, width=10).pack(side='left', padx=5)
         
-        ttk.Button(creation_frame, text="Create Song", 
-                   command=self.create_song).pack(pady=5)
+        # Buttons for song creation
+        buttons_frame = ttk.Frame(creation_frame)
+        buttons_frame.pack(pady=5)
+        
+        ttk.Button(buttons_frame, text="Create Song", 
+                   command=self.create_song).pack(side='left', padx=5)
+        ttk.Button(buttons_frame, text="Create Song from Collection", 
+                   command=self.create_song_from_collection).pack(side='left', padx=5)
         
         # Modulation section - modulate_*_with_sin
         mod_sin_frame = ttk.LabelFrame(tab, text="Sine Modulation (Continuous Phase)", padding=10)
@@ -1673,6 +1962,70 @@ $vel08 -> 110"""
             messagebox.showerror("Error", f"Invalid input: {str(e)}")
         except Exception as e:
             messagebox.showerror("Error", f"Error creating song: {str(e)}")
+    
+    def create_song_from_collection(self):
+        """Create a Song object from the Bar Collection"""
+        try:
+            # Check if collection is empty
+            if not self.bar_collection.bars:
+                messagebox.showwarning("Empty Collection", 
+                                      "Bar collection is empty. Please add bars to the collection first.")
+                return
+            
+            # Get song name
+            name = self.song_name_var.get()
+            if not name:
+                messagebox.showwarning("Missing Name", "Please enter a song name.")
+                return
+            
+            # Create Song with bar_collection parameter
+            self.current_song = sk3.Song(
+                name=name, 
+                num_bars=len(self.bar_collection.bars),
+                ioi=0.5,  # Default ioi, not used when bar_collection is provided
+                bar_collection=self.bar_collection
+            )
+            
+            # Create bars from collection
+            self.current_song.make_bar_list()
+            
+            # Debug: Print actual number of bars created
+            print(f"DEBUG: Created song from collection with {len(self.current_song.bar_list)} bars")
+            if self.current_song.bar_list:
+                print(f"DEBUG: First bar has {len(self.current_song.bar_list[0].note_list)} notes")
+                print(f"DEBUG: Last bar onset: {self.current_song.bar_list[-1].bar_onset}")
+            
+            # Display song
+            self.display_song()
+            
+            # Update piano roll if it exists
+            if self.piano_roll:
+                self.piano_roll.set_song(self.current_song)
+            
+            # Automatically validate the song
+            try:
+                with tempfile.NamedTemporaryFile(suffix='.mid', delete=False) as tmp_file:
+                    tmp_filename = tmp_file.name
+                self.current_song.make_midi_file(tmp_filename)
+                is_valid = self.validate_midi_file(tmp_filename)
+                try:
+                    os.unlink(tmp_filename)
+                except:
+                    pass
+            except:
+                pass  # Validation is optional
+            
+            # Update status
+            total_notes = sum(len(bar.note_list) for bar in self.current_song.bar_list)
+            num_bars = len(self.current_song.bar_list)
+            self.object_status_label.config(text=f"Song: {name} ({num_bars} bars from collection, {total_notes} notes)", 
+                                            foreground='green')
+            self.update_status(f"Song '{name}' created from bar collection with {num_bars} bars")
+            
+            messagebox.showinfo("Success", f"Song '{name}' created from bar collection with {num_bars} bars!")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Error creating song from collection: {str(e)}")
     
     def display_song(self):
         """Display the current song's information"""

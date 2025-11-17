@@ -247,10 +247,82 @@ class Bar:
             if self.note_list[i].velocity > 127:
                 self.note_list[i].velocity = 127
         return
+
+
+class BarCollection:
+    """Collection of multiple Bar objects for manipulation and export"""
+    def __init__(self, bars=None):
+        self.bars = bars if bars is not None else []
     
+    def add_bar(self, bar):
+        """Add a Bar to the collection"""
+        self.bars.append(bar)
     
+    def remove_bar(self, index):
+        """Remove a Bar at the given index"""
+        if 0 <= index < len(self.bars):
+            self.bars.pop(index)
+    
+    def clear(self):
+        """Remove all bars"""
+        self.bars = []
+    
+    def make_midi_file(self, filename, name="BarCollection"):
+        """Export all bars to a MIDI file"""
+        midi_file = MIDIFile(numTracks=1, removeDuplicates=False, deinterleave=False, 
+                            adjust_origin=False, file_format=0)
+        midi_file.addTempo(0, 0, 120)
+        midi_file.addTrackName(0, 0, name)
+        
+        note_count = 0
+        for bar_idx, bar in enumerate(self.bars):
+            for note in bar.note_list:
+                midi_file.addNote(0, 0, note.pitch, note.onset, note.duration, note.velocity)
+                note_count += 1
+        
+        print(f"Total notes added to MIDI: {note_count}")
+        with open(filename, "wb") as output_file:
+            midi_file.writeFile(output_file)
+        return
+    
+    def transpose_all(self, semitone):
+        """Transpose all bars"""
+        for bar in self.bars:
+            bar.transpose_note_list(semitone)
+    
+    def reverse_all(self):
+        """Reverse all bars"""
+        for bar in self.bars:
+            bar.reverse_note_list()
+    
+    def set_all_durations(self, duration):
+        """Set duration for all notes in all bars"""
+        for bar in self.bars:
+            bar.set_note_list_durations(duration)
+    
+    def random_pitch_all(self):
+        """Apply random pitch variation to all bars"""
+        for bar in self.bars:
+            bar.random_pitch()
+    
+    def random_onset_all(self):
+        """Apply random onset variation to all bars"""
+        for bar in self.bars:
+            bar.random_onset()
+    
+    def random_duration_all(self):
+        """Apply random duration variation to all bars"""
+        for bar in self.bars:
+            bar.random_duration()
+    
+    def random_velocity_all(self):
+        """Apply random velocity variation to all bars"""
+        for bar in self.bars:
+            bar.random_velocity()
+    
+
 class Song:
-    def __init__(self, name="skTrack", num_bars=4, ioi=1.0, pitch_generator=None, duration_generator=None, velocity_generator=None, generate_every_bar=False):
+    def __init__(self, name="skTrack", num_bars=4, ioi=1.0, pitch_generator=None, duration_generator=None, velocity_generator=None, generate_every_bar=False, bar_collection=None):
         self.name = name
         self.bar_list = []
         self.ioi = ioi
@@ -262,6 +334,7 @@ class Song:
         self.duration_list = []
         self.velocity_list = []
         self.generate_every_bar = generate_every_bar
+        self.bar_collection = bar_collection  # Optional BarCollection to use instead of generating
 
     def generate_parameter_lists(self):
         if self.pitch_generator:
@@ -290,6 +363,14 @@ class Song:
 
     def make_bar_list(self):
         self.bar_list = []
+        
+        # If a BarCollection was provided, use those bars instead of generating
+        if self.bar_collection is not None:
+            print(f"DEBUG make_bar_list: Using BarCollection with {len(self.bar_collection.bars)} bars")
+            self.bar_list = self.bar_collection.bars.copy()
+            return
+        
+        # Otherwise, generate bars as usual
         onset = 0
         print(f"DEBUG make_bar_list: num_bars={self.num_bars}, song.ioi={self.ioi}, generate_every_bar={self.generate_every_bar}")
         for i in range(self.num_bars):
