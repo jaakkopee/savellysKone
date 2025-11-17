@@ -23,30 +23,91 @@ class ListGenerator:
         attempts = 0
         max_length_seen = 0
         
-        # Try to generate a list that meets min_length and is even
-        while (len(self.list) < self.min_length) or (len(self.list) % 2 != 0):
-            self.list = ggp.generate(self.grammar, "$S", 128)  # Increased depth from 64 to 128
-            self.list = self.list.split()
+        # Try to generate a list that meets min_length
+        while len(self.list) < self.min_length:
+            raw_output = ggp.generate(self.grammar, "$S", 128)  # Increased depth from 64 to 128
+            self.list = raw_output.split()
             
-            # Filter out any unexpanded non-terminals (containing $)
+            # Check for unexpanded non-terminals (containing $)
+            unexpanded = [item for item in self.list if '$' in item]
+            if unexpanded:
+                print(f"WARNING ({self.type}): Grammar contains unexpanded non-terminals after depth 128")
+                print(f"         Unexpanded symbols: {unexpanded[:5]}")  # Show first 5
+                print(f"         Raw output: {raw_output[:100]}...")
+                print(f"         This may indicate missing grammar rules or infinite recursion")
+            
+            # Filter out any unexpanded non-terminals
             self.list = [item for item in self.list if '$' not in item]
             
+            if not self.list:
+                print(f"ERROR ({self.type}): After filtering unexpanded symbols, list is empty!")
+                print(f"       Raw output was: {raw_output}")
+                attempts += 1
+                continue
+            
             # Convert to appropriate type with error handling
+            conversion_errors = []
             try:
                 if self.type == "pitch":
-                    self.list = [int(note) for note in self.list]
+                    converted = []
+                    for i, note in enumerate(self.list):
+                        try:
+                            val = int(note)
+                            if not (0 <= val <= 127):
+                                conversion_errors.append(f"Note {i}: {note} -> {val} (out of MIDI range 0-127)")
+                            converted.append(val)
+                        except ValueError:
+                            conversion_errors.append(f"Note {i}: '{note}' cannot be converted to integer")
+                            raise
+                    self.list = converted
                 elif self.type == "duration": 
-                    self.list = [float(note) for note in self.list]
+                    converted = []
+                    for i, note in enumerate(self.list):
+                        try:
+                            val = float(note)
+                            if val < 0:
+                                conversion_errors.append(f"Duration {i}: {note} -> {val} (negative duration)")
+                            elif val > 100:
+                                conversion_errors.append(f"Duration {i}: {note} -> {val} (unusually long)")
+                            converted.append(val)
+                        except ValueError:
+                            conversion_errors.append(f"Duration {i}: '{note}' cannot be converted to float")
+                            raise
+                    self.list = converted
                 elif self.type == "velocity":
-                    self.list = [int(note) for note in self.list]
+                    converted = []
+                    for i, note in enumerate(self.list):
+                        try:
+                            val = int(note)
+                            if not (0 <= val <= 127):
+                                conversion_errors.append(f"Velocity {i}: {note} -> {val} (out of MIDI range 0-127)")
+                            converted.append(val)
+                        except ValueError:
+                            conversion_errors.append(f"Velocity {i}: '{note}' cannot be converted to integer")
+                            raise
+                    self.list = converted
             except ValueError as e:
+                print(f"\n{'='*60}")
                 print(f"ERROR: Cannot convert grammar output to {self.type} type")
-                print(f"       Raw output: {self.list}")
-                print(f"       Error: {str(e)}")
-                print(f"       Skipping this generation and trying again...")
+                print(f"{'='*60}")
+                print(f"Raw grammar output: {raw_output[:200]}")
+                print(f"After splitting: {self.list[:10]} {'...' if len(self.list) > 10 else ''}")
+                if conversion_errors:
+                    print(f"\nConversion errors found:")
+                    for err in conversion_errors[:5]:  # Show first 5 errors
+                        print(f"  • {err}")
+                print(f"\nOriginal error: {str(e)}")
+                print(f"Attempt {attempts + 1}/{max_attempts} - Retrying with new generation...")
+                print(f"{'='*60}\n")
                 self.list = []  # Reset and try again
                 attempts += 1
                 continue
+            
+            # Show warnings for out-of-range values
+            if conversion_errors:
+                print(f"WARNING ({self.type}): Found {len(conversion_errors)} values with issues:")
+                for err in conversion_errors[:3]:
+                    print(f"  • {err}")
             
             # Track the maximum length we've seen
             if len(self.list) > max_length_seen:
@@ -75,10 +136,6 @@ class ListGenerator:
                     elif self.type == "velocity":
                         self.list = [100] * self.min_length
                     print(f"         Grammar produced empty list, using defaults")
-                
-                # Ensure even length
-                if len(self.list) % 2 != 0:
-                    self.list.append(self.list[-1])  # Duplicate last element
                 
                 break
         

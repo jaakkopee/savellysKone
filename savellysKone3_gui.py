@@ -463,11 +463,13 @@ Created with Python and Tkinter
             self.pitch_grammar_text = scrolledtext.ScrolledText(grammar_frame, height=10, width=80)
             self.pitch_grammar_text.pack(fill='both', expand=True, pady=5)
             
-            # Add validation button
+            # Add validation button and status label
             validate_frame = ttk.Frame(grammar_frame)
             validate_frame.pack(fill='x', pady=2)
             ttk.Button(validate_frame, text="Validate Grammar", 
                       command=lambda: self.validate_grammar("pitch")).pack(side='left', padx=5)
+            self.pitch_validation_label = ttk.Label(validate_frame, text="", foreground="gray")
+            self.pitch_validation_label.pack(side='left', padx=5, fill='x', expand=True)
             
             # Set default pitch grammar
             default_grammar = """$S -> $phrase01 $phrase02
@@ -487,11 +489,13 @@ $note08 -> 72"""
             self.duration_grammar_text = scrolledtext.ScrolledText(grammar_frame, height=10, width=80)
             self.duration_grammar_text.pack(fill='both', expand=True, pady=5)
             
-            # Add validation button
+            # Add validation button and status label
             validate_frame = ttk.Frame(grammar_frame)
             validate_frame.pack(fill='x', pady=2)
             ttk.Button(validate_frame, text="Validate Grammar", 
                       command=lambda: self.validate_grammar("duration")).pack(side='left', padx=5)
+            self.duration_validation_label = ttk.Label(validate_frame, text="", foreground="gray")
+            self.duration_validation_label.pack(side='left', padx=5, fill='x', expand=True)
             
             # Set default duration grammar
             default_grammar = """$S -> $phrase01 $phrase02
@@ -511,11 +515,13 @@ $dur08 -> 1.0"""
             self.velocity_grammar_text = scrolledtext.ScrolledText(grammar_frame, height=10, width=80)
             self.velocity_grammar_text.pack(fill='both', expand=True, pady=5)
             
-            # Add validation button
+            # Add validation button and status label
             validate_frame = ttk.Frame(grammar_frame)
             validate_frame.pack(fill='x', pady=2)
             ttk.Button(validate_frame, text="Validate Grammar", 
                       command=lambda: self.validate_grammar("velocity")).pack(side='left', padx=5)
+            self.velocity_validation_label = ttk.Label(validate_frame, text="", foreground="gray")
+            self.velocity_validation_label.pack(side='left', padx=5, fill='x', expand=True)
             
             # Set default velocity grammar - matches Bar Manipulation default
             default_grammar = """$S -> $phrase01 $phrase02
@@ -867,30 +873,53 @@ $vel08 -> 110"""
     def validate_grammar(self, grammar_type):
         """Validate a grammar and show results"""
         try:
-            # Get the grammar text
+            # Get the grammar text and corresponding label
             if grammar_type == "pitch":
                 grammar_text = self.pitch_grammar_text.get('1.0', 'end-1c')
+                status_label = self.pitch_validation_label
             elif grammar_type == "duration":
                 grammar_text = self.duration_grammar_text.get('1.0', 'end-1c')
+                status_label = self.duration_validation_label
             else:  # velocity
                 grammar_text = self.velocity_grammar_text.get('1.0', 'end-1c')
+                status_label = self.velocity_validation_label
             
             # Validate using the grammar validator
             is_valid, message = grammar_validator.validate_grammar(grammar_text)
             
-            # Show results in a message box
+            # Update the inline status label with detailed info
             if is_valid:
+                status_label.config(text="✓ Valid", foreground="green")
                 messagebox.showinfo(
                     f"{grammar_type.capitalize()} Grammar Validation", 
                     message
                 )
             else:
+                # Extract first error for inline display
+                lines = message.split('\n')
+                first_error = next((line for line in lines if line.strip() and not line.startswith('Grammar')), "Invalid")
+                # Truncate if too long
+                if len(first_error) > 80:
+                    first_error = first_error[:77] + "..."
+                status_label.config(text=f"✗ {first_error}", foreground="red")
                 messagebox.showwarning(
                     f"{grammar_type.capitalize()} Grammar Validation Failed", 
                     message
                 )
                 
         except Exception as e:
+            # Show error in label
+            if grammar_type == "pitch":
+                status_label = self.pitch_validation_label
+            elif grammar_type == "duration":
+                status_label = self.duration_validation_label
+            else:
+                status_label = self.velocity_validation_label
+            
+            error_msg = str(e)
+            if len(error_msg) > 80:
+                error_msg = error_msg[:77] + "..."
+            status_label.config(text=f"✗ Error: {error_msg}", foreground="red")
             messagebox.showerror("Validation Error", f"Error validating grammar:\n\n{str(e)}")
     
     def create_bar(self):
