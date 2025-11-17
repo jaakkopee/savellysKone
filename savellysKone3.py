@@ -150,13 +150,14 @@ class Note:
         return    
     
 class Bar:
-    def __init__(self, onset=0, ioi=0.75, pitch_list=None, duration_list=None, velocity_list=None):
+    def __init__(self, onset=0, ioi=0.75, pitch_list=None, duration_list=None, velocity_list=None, num_notes=None):
         self.pitch_list = pitch_list
         self.duration_list = duration_list
         self.velocity_list = velocity_list
         self.note_list = []
         self.bar_onset = onset
         self.ioi = ioi
+        self.num_notes = num_notes  # User-specified number of notes, None = use longest list
 
     def make_note_list(self):
         self.note_list = []
@@ -167,10 +168,16 @@ class Bar:
             print(f"WARNING: One or more parameter lists are empty!")
             return
         
-        # Use the LONGEST list to determine number of notes
-        # Other lists will wrap around using modulo (circular buffer)
-        max_len = max(len(self.pitch_list), len(self.duration_list), len(self.velocity_list))
+        # Determine number of notes: use user-specified value if provided, otherwise use longest list
+        if self.num_notes is not None:
+            max_len = self.num_notes
+            print(f"DEBUG: Using user-specified number of notes: {max_len}")
+        else:
+            # Use the LONGEST list to determine number of notes
+            max_len = max(len(self.pitch_list), len(self.duration_list), len(self.velocity_list))
+            print(f"DEBUG: Using longest list length: {max_len}")
         
+        # Other lists will wrap around using modulo (circular buffer)
         # Info about list cycling behavior
         if not (len(self.pitch_list) == len(self.duration_list) == len(self.velocity_list)):
             print(f"DEBUG: Using circular buffer - pitch:{len(self.pitch_list)}, duration:{len(self.duration_list)}, velocity:{len(self.velocity_list)}")
@@ -243,7 +250,7 @@ class Bar:
     
     
 class Song:
-    def __init__(self, name="skTrack", num_bars=4, ioi=1.0, pitch_generator=None, duration_generator=None, velocity_generator=None, generate_every_bar=False, list_length_behavior="truncate"):
+    def __init__(self, name="skTrack", num_bars=4, ioi=1.0, pitch_generator=None, duration_generator=None, velocity_generator=None, generate_every_bar=False):
         self.name = name
         self.bar_list = []
         self.ioi = ioi
@@ -255,7 +262,6 @@ class Song:
         self.duration_list = []
         self.velocity_list = []
         self.generate_every_bar = generate_every_bar
-        self.list_length_behavior = list_length_behavior  # "truncate", "loop_longest", "loop_bar"
 
     def generate_parameter_lists(self):
         if self.pitch_generator:
@@ -277,49 +283,8 @@ class Song:
             self.velocity_list = [100]*8
             print(f"    Using default velocity_list: {len(self.velocity_list)} notes")
 
-        print(f"    Before adjustment: pitch={len(self.pitch_list)}, duration={len(self.duration_list)}, velocity={len(self.velocity_list)}")
-        print(f"    List length behavior: {self.list_length_behavior}")
-        
-        if self.list_length_behavior == "truncate":
-            # Truncate all lists to the shortest length
-            min_length = min(len(self.pitch_list), len(self.duration_list), len(self.velocity_list))
-            self.pitch_list = self.pitch_list[:min_length]
-            self.duration_list = self.duration_list[:min_length]
-            self.velocity_list = self.velocity_list[:min_length]
-            print(f"    After truncation: all lists = {min_length} notes")
-            
-        elif self.list_length_behavior == "loop_longest":
-            # Loop shorter lists to match the longest
-            max_length = max(len(self.pitch_list), len(self.duration_list), len(self.velocity_list))
-            while len(self.pitch_list) < max_length:
-                self.pitch_list.extend(self.pitch_list[:max_length - len(self.pitch_list)])
-            while len(self.duration_list) < max_length:
-                self.duration_list.extend(self.duration_list[:max_length - len(self.duration_list)])
-            while len(self.velocity_list) < max_length:
-                self.velocity_list.extend(self.velocity_list[:max_length - len(self.velocity_list)])
-            self.pitch_list = self.pitch_list[:max_length]
-            self.duration_list = self.duration_list[:max_length]
-            self.velocity_list = self.velocity_list[:max_length]
-            print(f"    After looping to longest: all lists = {max_length} notes")
-            
-        elif self.list_length_behavior == "loop_bar":
-            # Loop until all lists match and length is even (for bar alignment)
-            max_length = max(len(self.pitch_list), len(self.duration_list), len(self.velocity_list))
-            # Find the least common multiple or next power of 2
-            target_length = max_length
-            if target_length % 2 != 0:
-                target_length += 1
-            # Extend all lists to target length by looping
-            while len(self.pitch_list) < target_length:
-                self.pitch_list.extend(self.pitch_list[:target_length - len(self.pitch_list)])
-            while len(self.duration_list) < target_length:
-                self.duration_list.extend(self.duration_list[:target_length - len(self.duration_list)])
-            while len(self.velocity_list) < target_length:
-                self.velocity_list.extend(self.velocity_list[:target_length - len(self.velocity_list)])
-            self.pitch_list = self.pitch_list[:target_length]
-            self.duration_list = self.duration_list[:target_length]
-            self.velocity_list = self.velocity_list[:target_length]
-            print(f"    After looping to bar length: all lists = {target_length} notes (even)")
+        print(f"    Lists: pitch={len(self.pitch_list)}, duration={len(self.duration_list)}, velocity={len(self.velocity_list)}")
+        print(f"    Using circular buffer for bars (lists wrap independently)")
 
         return
 

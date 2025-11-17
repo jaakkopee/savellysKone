@@ -639,6 +639,23 @@ $vel08 -> 110"""
         self.ioi_var = tk.StringVar(value="0.75")
         ttk.Entry(params_frame, textvariable=self.ioi_var, width=10).pack(side='left', padx=5)
         
+        ttk.Label(params_frame, text="Number of Notes:").pack(side='left', padx=5)
+        self.num_notes_var = tk.StringVar(value="")
+        ttk.Entry(params_frame, textvariable=self.num_notes_var, width=10).pack(side='left', padx=5)
+        ttk.Label(params_frame, text="(leave empty for auto)", font=('TkDefaultFont', 8)).pack(side='left', padx=2)
+        
+        # List length behavior options
+        list_behavior_frame = ttk.LabelFrame(creation_frame, text="List Length Behavior", padding=5)
+        list_behavior_frame.pack(fill='x', pady=5)
+        
+        self.bar_list_behavior_var = tk.StringVar(value="circular")
+        ttk.Radiobutton(list_behavior_frame, text="Circular buffer (phase)", 
+                       variable=self.bar_list_behavior_var, value="circular").pack(side='left', padx=5)
+        ttk.Radiobutton(list_behavior_frame, text="Cut to shortest", 
+                       variable=self.bar_list_behavior_var, value="truncate").pack(side='left', padx=5)
+        ttk.Radiobutton(list_behavior_frame, text="Loop to longest", 
+                       variable=self.bar_list_behavior_var, value="loop_longest").pack(side='left', padx=5)
+        
         ttk.Button(creation_frame, text="Create Bar", 
                    command=self.create_bar).pack(pady=5)
         
@@ -970,22 +987,61 @@ $vel08 -> 110"""
             else:
                 velocity_list = [int(x.strip()) for x in self.velocity_list_var.get().split(',')]
             
+            # Apply list length behavior
+            list_behavior = self.bar_list_behavior_var.get()
+            
+            if list_behavior == "truncate":
+                # Cut all lists to the shortest length
+                min_length = min(len(pitch_list), len(duration_list), len(velocity_list))
+                pitch_list = pitch_list[:min_length]
+                duration_list = duration_list[:min_length]
+                velocity_list = velocity_list[:min_length]
+                print(f"Bar creation: Truncated to shortest ({min_length} notes)")
+                
+            elif list_behavior == "loop_longest":
+                # Loop shorter lists to match the longest
+                max_length = max(len(pitch_list), len(duration_list), len(velocity_list))
+                while len(pitch_list) < max_length:
+                    pitch_list.extend(pitch_list[:max_length - len(pitch_list)])
+                while len(duration_list) < max_length:
+                    duration_list.extend(duration_list[:max_length - len(duration_list)])
+                while len(velocity_list) < max_length:
+                    velocity_list.extend(velocity_list[:max_length - len(velocity_list)])
+                pitch_list = pitch_list[:max_length]
+                duration_list = duration_list[:max_length]
+                velocity_list = velocity_list[:max_length]
+                print(f"Bar creation: Looped to longest ({max_length} notes)")
+                
+            # If circular buffer mode, lists remain as-is and will be wrapped by Bar.make_note_list()
+            elif list_behavior == "circular":
+                print(f"Bar creation: Using circular buffer (pitch:{len(pitch_list)}, duration:{len(duration_list)}, velocity:{len(velocity_list)})")
+            
             # Get parameters
             onset = float(self.onset_var.get())
             ioi = float(self.ioi_var.get())
             
+            # Get number of notes (optional)
+            num_notes_str = self.num_notes_var.get().strip()
+            num_notes = int(num_notes_str) if num_notes_str else None
+            
             # Create Bar
-            self.current_bar = sk3.Bar(onset, ioi, pitch_list, duration_list, velocity_list)
+            self.current_bar = sk3.Bar(onset, ioi, pitch_list, duration_list, velocity_list, num_notes=num_notes)
             self.current_bar.make_note_list()
             
             # Display bar
             self.display_bar()
             
-            # Update status
-            self.object_status_label.config(text=f"Bar loaded: {len(pitch_list)} notes", foreground='blue')
-            self.update_status(f"Bar created with {len(pitch_list)} notes")
+            # Get actual number of notes created
+            actual_notes = len(self.current_bar.note_list)
             
-            messagebox.showinfo("Success", "Bar created successfully!")
+            # Update status
+            self.object_status_label.config(text=f"Bar loaded: {actual_notes} notes", foreground='blue')
+            if num_notes is not None:
+                self.update_status(f"Bar created with {actual_notes} notes (user-specified)")
+            else:
+                self.update_status(f"Bar created with {actual_notes} notes (auto: longest list)")
+            
+            messagebox.showinfo("Success", f"Bar created successfully with {actual_notes} notes!")
             
         except ValueError as e:
             messagebox.showerror("Error", f"Invalid input: {str(e)}")
@@ -1333,18 +1389,6 @@ $vel08 -> 110"""
         self.song_ioi_var = tk.StringVar(value="0.75")
         ttk.Entry(params_frame, textvariable=self.song_ioi_var, width=10).pack(side='left', padx=5)
         
-        # List length behavior selector
-        list_behavior_frame = ttk.Frame(creation_frame)
-        list_behavior_frame.pack(fill='x', pady=5)
-        ttk.Label(list_behavior_frame, text="Uneven list lengths:").pack(side='left', padx=5)
-        self.list_length_behavior_var = tk.StringVar(value="truncate")
-        ttk.Radiobutton(list_behavior_frame, text="Truncate to shortest", 
-                       variable=self.list_length_behavior_var, value="truncate").pack(side='left', padx=5)
-        ttk.Radiobutton(list_behavior_frame, text="Loop to longest", 
-                       variable=self.list_length_behavior_var, value="loop_longest").pack(side='left', padx=5)
-        ttk.Radiobutton(list_behavior_frame, text="Loop to matching bar", 
-                       variable=self.list_length_behavior_var, value="loop_bar").pack(side='left', padx=5)
-        
         ttk.Button(creation_frame, text="Create Song", 
                    command=self.create_song).pack(pady=5)
         
@@ -1549,10 +1593,7 @@ $vel08 -> 110"""
                 velocity_min_length = int(velocity_min_length_str) if velocity_min_length_str else 8
                 velocity_generator = sk3.ListGenerator(velocity_grammar, velocity_min_length, "velocity")
             
-            # Get list length behavior
-            list_length_behavior = self.list_length_behavior_var.get()
-            
-            # Create Song with or without generators
+            # Create Song with or without generators (uses circular buffers for uneven lists)
             self.current_song = sk3.Song(
                 name=name, 
                 num_bars=num_bars, 
@@ -1560,8 +1601,7 @@ $vel08 -> 110"""
                 pitch_generator=pitch_generator,
                 duration_generator=duration_generator,
                 velocity_generator=velocity_generator,
-                generate_every_bar=generate_every_bar,
-                list_length_behavior=list_length_behavior
+                generate_every_bar=generate_every_bar
             )
             
             # For non-GEB parameters, parse and set the lists BEFORE making bars
