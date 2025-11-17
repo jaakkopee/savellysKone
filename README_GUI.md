@@ -20,12 +20,13 @@ python3 savellysKone3_gui.py
 
 ## Overview
 
-The GUI features four main tabs:
+The GUI features five main tabs:
 
 1. **List Generator** - Generate musical parameters using grammars
-2. **Bar Manipulation** - Create and modify musical bars
-3. **Song Modulation** - Apply sinusoidal modulation to songs
-4. **Piano Roll** - Visualize MIDI data with zoom and scroll controls
+2. **Bar Manipulation** - Create and modify musical bars with modulation
+3. **Bar Collection** - Manage multiple bars and create sequences
+4. **Song Modulation** - Apply sinusoidal modulation to songs
+5. **Piano Roll** - Visualize MIDI data with zoom and scroll controls
 
 ## Features
 
@@ -99,8 +100,14 @@ Create and manipulate musical bars with comprehensive controls:
 - **Pitch list** - Comma-separated MIDI note numbers (e.g., `60, 62, 64, 65`)
 - **Duration list** - Note durations in beats (e.g., `1.0, 0.5, 1.0, 0.5`)
 - **Velocity list** - Note velocities 0-127 (e.g., `60, 80, 100, 90`)
-- **Onset** - Bar start time in beats (default: 0.0)
+- **Onset** - Bar start time in beats (leave empty for automatic onset when adding to collection)
 - **IOI** - Inter-Onset Interval between notes (default: 1.0)
+- **Num Notes** - Optional: specify exact number of notes (leave empty to use longest list length)
+
+**Smart Onset Handling**:
+- Leave onset field **empty** when adding to collection → automatic sequential placement
+- Fill onset field with a value → manual control of bar timing
+- After adding to collection, onset field auto-updates to next sequential position
 
 #### Bar Operations
 
@@ -112,6 +119,27 @@ Create and manipulate musical bars with comprehensive controls:
 - **Random Velocities** - Apply random velocity variations (±20)
 - **Random Onsets** - Apply random timing variations
 
+#### Bar Modulation
+
+Apply sinusoidal modulation to the current bar:
+
+**Absolute Onset Modulation** (continuous phase):
+- **Modulate Pitch** - Uses absolute note onset time
+- **Modulate Duration** - Uses absolute note onset time
+- **Modulate Velocity** - Uses absolute note onset time
+- **Modulate Onset** - Uses absolute note onset time
+
+**Phase-by-Bar Modulation** (resets at bar onset):
+- **Modulate Pitch (Phase by Bar)** - Phase resets at bar start
+- **Modulate Duration (Phase by Bar)** - Phase resets at bar start
+- **Modulate Velocity (Phase by Bar)** - Phase resets at bar start
+- **Modulate Onset (Phase by Bar)** - Phase resets at bar start
+
+**Modulation Controls**:
+- **Frequency** - Sine wave frequency (0.1 to 10.0 Hz)
+- **Amplitude** - Modulation depth (0.1 to 20.0)
+- **Phase Reset Checkbox** - Toggle between absolute and phase-by-bar modulation
+
 #### Display
 
 The note table shows:
@@ -120,7 +148,46 @@ The note table shows:
 - Duration (note length in beats)
 - Velocity (0-127)
 
-### 3. Song Modulation Tab
+**Note**: The Bar Manipulation tab is scrollable to accommodate all controls.
+
+### 3. Bar Collection Tab
+
+Manage multiple bars and create complex sequences:
+
+#### Collection Display
+
+- **Bar List** - Visual listbox showing all bars in collection
+  - Format: "Bar [index]: onset=[time], notes=[count]"
+  - Click to select a bar for operations
+
+#### Collection Operations
+
+- **Add to Collection** - Add currently created bar to collection
+  - Uses smart onset: automatic if onset field empty, manual if filled
+  - Automatically updates onset field for next bar
+- **Move Up** - Move selected bar earlier in sequence
+- **Move Down** - Move selected bar later in sequence
+- **Remove Selected** - Delete selected bar from collection
+- **Clear Collection** - Remove all bars
+- **Export Collection to MIDI** - Save collection as MIDI file
+
+#### Current Bar Info
+
+Displays detailed information about the selected bar:
+- Bar onset time
+- Number of notes
+- Inter-onset interval (IOI)
+- Full note list with pitch, onset, duration, velocity
+
+#### Workflow
+
+1. Create bars in Bar Manipulation tab
+2. Leave onset field empty for automatic sequential placement
+3. Click "Add to Collection" to add each bar
+4. Use Move Up/Down to reorder bars
+5. Export entire collection to MIDI
+
+### 4. Song Modulation Tab
 
 Apply sinusoidal modulation to entire songs with precise control:
 
@@ -144,8 +211,15 @@ Apply sinusoidal modulation to entire songs with precise control:
 - **Amplitude slider** - 0.1 to 10.0 (modulation depth)
 - **Apply button** - Execute the modulation
 - **Reset button** - Clear modulation and restore original song
+- **Create Song from Collection** - Generate song from bar collection instead of grammars
 
-### 4. Piano Roll Tab
+**Song Creation Options**:
+- Use grammars to generate bars (traditional method)
+- Use "Create Song from Collection" to build song from collected bars
+  - Bars are automatically sequenced (onsets recalculated)
+  - Each bar starts where the previous bar ends
+
+### 5. Piano Roll Tab
 
 Real-time visualization of MIDI data with advanced navigation:
 
@@ -217,16 +291,45 @@ Bottom status bar displays:
 5. Go to **Piano Roll** tab to visualize
 6. Adjust zoom and scroll to inspect details
 
-### Example 2: Apply Modulation and Export
+### Example 2: Build a Multi-Bar Sequence
 
-1. Create a bar (see Example 1)
+1. Go to **List Generator** tab and generate your first set of lists
+2. Switch to **Bar Manipulation** tab
+3. Leave **Onset** field empty (for automatic placement)
+4. Click **Create Bar**
+5. Click **Add to Collection** - bar added at onset 0.0
+6. Generate new lists or modify existing ones
+7. Click **Create Bar** again
+8. Click **Add to Collection** - bar automatically placed after first bar
+9. Repeat to build your sequence
+10. Go to **Bar Collection** tab to:
+    - Reorder bars with Move Up/Down
+    - Remove unwanted bars
+    - Export collection to MIDI
+11. Or go to **Song Modulation** tab and click **Create Song from Collection**
+12. Visualize in **Piano Roll** tab
+
+### Example 3: Apply Bar Modulation
+
+1. Create a bar in **Bar Manipulation** tab
+2. In **Bar Modulation** section:
+3. Set Frequency to 2.0, Amplitude to 5.0
+4. Check "Phase Reset at Bar Onset" for bar-synchronized modulation
+5. Click **Modulate Pitch (Phase by Bar)**
+6. View modulated bar in note display
+7. Add to collection or export directly
+
+### Example 4: Apply Song Modulation and Export
+
+1. Create a bar collection (see Example 2)
 2. Go to **Song Modulation** tab
-3. Adjust **Modulate Pitch** frequency to 1.0, amplitude to 5.0
-4. Click **Apply** under Modulate Pitch
-5. Go to **Piano Roll** tab to see the modulated result
-6. Use **File > Export MIDI** to save
+3. Click **Create Song from Collection**
+4. Adjust **Modulate Pitch** frequency to 1.0, amplitude to 5.0
+5. Click **Apply** under Modulate Pitch
+6. Go to **Piano Roll** tab to see the modulated result
+7. Use **File > Export MIDI** to save
 
-### Example 3: Explore with Random Variations
+### Example 5: Explore with Random Variations
 
 1. In **Bar Manipulation** tab, enter your base lists
 2. Click **Create Bar**
@@ -308,11 +411,15 @@ Colors interpolate smoothly within each range for precise representation.
 ## Tips
 
 - **Use Auto-Update**: Generate grammars first, they populate Bar Manipulation automatically
+- **Smart Onset**: Leave onset field empty when building collections for automatic sequential placement
+- **Bar Collection Workflow**: Create bars → add to collection → reorder → export or create song
+- **Two Modulation Levels**: Apply modulation at bar level (Bar Manipulation) or song level (Song Modulation)
+- **Phase Reset**: Use "Phase by Bar" modulation for rhythmic consistency across bars
 - **Zoom Before Export**: Verify details with zoom before exporting MIDI
 - **Reset Modulation**: Always available to restore original composition
 - **Validate Often**: Check MIDI validity before export to catch errors early
 - **Independent Zoom**: Use different H/V zoom levels for different perspectives
-- **Phase-Reset Modulation**: Use "by bar" variants for rhythmic consistency across bars
+- **Collection Reordering**: Use Move Up/Down to experiment with different bar sequences
 
 ## Troubleshooting
 
@@ -329,6 +436,16 @@ Colors interpolate smoothly within each range for precise representation.
 - Check velocity values have variation (not all the same)
 - Default velocity list includes variation: `60, 80, 100, 90, 70, 95, 85, 110`
 
+**Bar collection onset issues**:
+- Leave onset field empty for automatic sequential placement
+- Filled onset field uses manual timing (for advanced users)
+- Collection automatically recalculates onsets when creating song
+
+**Bar modulation not visible**:
+- Check frequency and amplitude values are not too small
+- View note table to see exact numeric changes
+- Try larger amplitude values for more obvious effects
+
 **Zoom/scroll not working**:
 - Ensure content is generated (create a bar first)
 - Reset zoom to 1.0x if display seems frozen
@@ -341,3 +458,6 @@ Colors interpolate smoothly within each range for precise representation.
 - The piano roll updates automatically after operations
 - MIDI files are exported in standard MIDI format compatible with all DAWs
 - Grammar generation uses randomization - results vary each time
+- Bar collections support both automatic (sequential) and manual (user-defined) onset timing
+- Modulation can be applied at both bar level and song level for maximum flexibility
+- The Bar Manipulation tab is scrollable to accommodate all controls
