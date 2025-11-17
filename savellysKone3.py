@@ -19,16 +19,66 @@ class ListGenerator:
 
     def generate_list(self):
         self.list = []
-        #powers_of_two = [2**i for i in range(10)]
-        while (len(self.list) < self.min_length) or (len(self.list)%2 != 0):
+        max_attempts = 100  # Prevent infinite loops
+        attempts = 0
+        max_length_seen = 0
+        
+        # Try to generate a list that meets min_length and is even
+        while (len(self.list) < self.min_length) or (len(self.list) % 2 != 0):
             self.list = ggp.generate(self.grammar, "$S", 64)
             self.list = self.list.split()
-            if self.type == "pitch":
-                self.list = [int(note) for note in self.list]
-            elif self.type == "duration": 
-                self.list = [float(note) for note in self.list]
-            elif self.type == "velocity":
-                self.list = [int(note) for note in self.list]
+            
+            # Convert to appropriate type with error handling
+            try:
+                if self.type == "pitch":
+                    self.list = [int(note) for note in self.list]
+                elif self.type == "duration": 
+                    self.list = [float(note) for note in self.list]
+                elif self.type == "velocity":
+                    self.list = [int(note) for note in self.list]
+            except ValueError as e:
+                print(f"ERROR: Cannot convert grammar output to {self.type} type")
+                print(f"       Raw output: {self.list}")
+                print(f"       Error: {str(e)}")
+                print(f"       Skipping this generation and trying again...")
+                self.list = []  # Reset and try again
+                attempts += 1
+                continue
+            
+            # Track the maximum length we've seen
+            if len(self.list) > max_length_seen:
+                max_length_seen = len(self.list)
+            
+            attempts += 1
+            
+            # If we've tried many times and can't reach min_length, pad the list
+            if attempts >= max_attempts:
+                print(f"WARNING: Grammar cannot generate {self.min_length} elements after {max_attempts} attempts.")
+                print(f"         Maximum length seen: {max_length_seen}")
+                print(f"         Padding list by repeating elements to reach min_length={self.min_length}")
+                
+                # Pad by repeating the list until we reach min_length
+                if len(self.list) > 0:
+                    while len(self.list) < self.min_length:
+                        # Repeat elements from the beginning
+                        elements_needed = self.min_length - len(self.list)
+                        self.list.extend(self.list[:elements_needed])
+                else:
+                    # If list is empty, use default values
+                    if self.type == "pitch":
+                        self.list = [60] * self.min_length
+                    elif self.type == "duration":
+                        self.list = [1.0] * self.min_length
+                    elif self.type == "velocity":
+                        self.list = [100] * self.min_length
+                    print(f"         Grammar produced empty list, using defaults")
+                
+                # Ensure even length
+                if len(self.list) % 2 != 0:
+                    self.list.append(self.list[-1])  # Duplicate last element
+                
+                break
+        
         return self.list
 
 class Note:
@@ -51,16 +101,33 @@ class Bar:
     def make_note_list(self):
         self.note_list = []
         delta = self.bar_onset
-        print(f"DEBUG make_note_list: bar_onset={self.bar_onset}, ioi={self.ioi}, num_pitches={len(self.pitch_list)}")
-        for i in range(len(self.pitch_list)):
+        
+        # Check for empty lists
+        if not self.pitch_list or not self.duration_list or not self.velocity_list:
+            print(f"WARNING: One or more parameter lists are empty!")
+            return
+        
+        # Use the LONGEST list to determine number of notes
+        # Other lists will wrap around using modulo (circular buffer)
+        max_len = max(len(self.pitch_list), len(self.duration_list), len(self.velocity_list))
+        
+        # Info about list cycling behavior
+        if not (len(self.pitch_list) == len(self.duration_list) == len(self.velocity_list)):
+            print(f"DEBUG: Using circular buffer - pitch:{len(self.pitch_list)}, duration:{len(self.duration_list)}, velocity:{len(self.velocity_list)}")
+            print(f"       Creating {max_len} notes with lists wrapping independently")
+        
+        print(f"DEBUG make_note_list: bar_onset={self.bar_onset}, ioi={self.ioi}, num_notes={max_len}")
+        
+        for i in range(max_len):
             note = Note()
             note.onset = delta
-            note.pitch = self.pitch_list[i]
-            note.duration = self.duration_list[i]
-            note.velocity = self.velocity_list[i]
+            # Use modulo to wrap around each list independently (circular buffer)
+            note.pitch = self.pitch_list[i % len(self.pitch_list)]
+            note.duration = self.duration_list[i % len(self.duration_list)]
+            note.velocity = self.velocity_list[i % len(self.velocity_list)]
             self.note_list.append(note)
             if i < 3:  # Print first 3 notes
-                print(f"  Note {i}: onset={note.onset}, pitch={note.pitch}")
+                print(f"  Note {i}: onset={note.onset}, pitch={note.pitch}, dur={note.duration}, vel={note.velocity}")
             delta += self.ioi
         return
     

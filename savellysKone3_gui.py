@@ -695,15 +695,18 @@ $vel08 -> 110"""
             # Get grammar string and parameters based on type
             if grammar_type == "pitch":
                 grammar_str = self.pitch_grammar_text.get('1.0', 'end-1c')
-                min_length = int(self.pitch_min_length_var.get())
+                min_length_str = self.pitch_min_length_var.get().strip()
+                min_length = int(min_length_str) if min_length_str else 8
                 output_widget = self.pitch_output_text
             elif grammar_type == "duration":
                 grammar_str = self.duration_grammar_text.get('1.0', 'end-1c')
-                min_length = int(self.duration_min_length_var.get())
+                min_length_str = self.duration_min_length_var.get().strip()
+                min_length = int(min_length_str) if min_length_str else 8
                 output_widget = self.duration_output_text
             else:  # velocity
                 grammar_str = self.velocity_grammar_text.get('1.0', 'end-1c')
-                min_length = int(self.velocity_min_length_var.get())
+                min_length_str = self.velocity_min_length_var.get().strip()
+                min_length = int(min_length_str) if min_length_str else 8
                 output_widget = self.velocity_output_text
             
             # Create ListGenerator
@@ -911,7 +914,8 @@ $vel08 -> 110"""
             if pitch_geb:
                 # Generate pitch list from grammar
                 pitch_grammar = self.pitch_grammar_text.get('1.0', 'end-1c')
-                pitch_min_length = int(self.pitch_min_length_var.get())
+                pitch_min_length_str = self.pitch_min_length_var.get().strip()
+                pitch_min_length = int(pitch_min_length_str) if pitch_min_length_str else 8
                 pitch_generator = sk3.ListGenerator(pitch_grammar, pitch_min_length, "pitch")
                 pitch_list = pitch_generator.generate_list()
             else:
@@ -920,7 +924,8 @@ $vel08 -> 110"""
             if duration_geb:
                 # Generate duration list from grammar
                 duration_grammar = self.duration_grammar_text.get('1.0', 'end-1c')
-                duration_min_length = int(self.duration_min_length_var.get())
+                duration_min_length_str = self.duration_min_length_var.get().strip()
+                duration_min_length = int(duration_min_length_str) if duration_min_length_str else 8
                 duration_generator = sk3.ListGenerator(duration_grammar, duration_min_length, "duration")
                 duration_list = duration_generator.generate_list()
             else:
@@ -929,7 +934,8 @@ $vel08 -> 110"""
             if velocity_geb:
                 # Generate velocity list from grammar
                 velocity_grammar = self.velocity_grammar_text.get('1.0', 'end-1c')
-                velocity_min_length = int(self.velocity_min_length_var.get())
+                velocity_min_length_str = self.velocity_min_length_var.get().strip()
+                velocity_min_length = int(velocity_min_length_str) if velocity_min_length_str else 8
                 velocity_generator = sk3.ListGenerator(velocity_grammar, velocity_min_length, "velocity")
                 velocity_list = velocity_generator.generate_list()
             else:
@@ -1496,19 +1502,22 @@ $vel08 -> 110"""
             if pitch_geb:
                 # Create pitch generator from grammar
                 pitch_grammar = self.pitch_grammar_text.get('1.0', 'end-1c')
-                pitch_min_length = int(self.pitch_min_length_var.get())
+                pitch_min_length_str = self.pitch_min_length_var.get().strip()
+                pitch_min_length = int(pitch_min_length_str) if pitch_min_length_str else 8
                 pitch_generator = sk3.ListGenerator(pitch_grammar, pitch_min_length, "pitch")
             
             if duration_geb:
                 # Create duration generator from grammar
                 duration_grammar = self.duration_grammar_text.get('1.0', 'end-1c')
-                duration_min_length = int(self.duration_min_length_var.get())
+                duration_min_length_str = self.duration_min_length_var.get().strip()
+                duration_min_length = int(duration_min_length_str) if duration_min_length_str else 8
                 duration_generator = sk3.ListGenerator(duration_grammar, duration_min_length, "duration")
             
             if velocity_geb:
                 # Create velocity generator from grammar
                 velocity_grammar = self.velocity_grammar_text.get('1.0', 'end-1c')
-                velocity_min_length = int(self.velocity_min_length_var.get())
+                velocity_min_length_str = self.velocity_min_length_var.get().strip()
+                velocity_min_length = int(velocity_min_length_str) if velocity_min_length_str else 8
                 velocity_generator = sk3.ListGenerator(velocity_grammar, velocity_min_length, "velocity")
             
             # Get list length behavior
