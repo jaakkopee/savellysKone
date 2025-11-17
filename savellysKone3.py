@@ -25,8 +25,11 @@ class ListGenerator:
         
         # Try to generate a list that meets min_length and is even
         while (len(self.list) < self.min_length) or (len(self.list) % 2 != 0):
-            self.list = ggp.generate(self.grammar, "$S", 64)
+            self.list = ggp.generate(self.grammar, "$S", 128)  # Increased depth from 64 to 128
             self.list = self.list.split()
+            
+            # Filter out any unexpanded non-terminals (containing $)
+            self.list = [item for item in self.list if '$' not in item]
             
             # Convert to appropriate type with error handling
             try:
