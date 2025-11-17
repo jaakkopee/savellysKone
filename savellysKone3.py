@@ -247,6 +247,82 @@ class Bar:
             if self.note_list[i].velocity > 127:
                 self.note_list[i].velocity = 127
         return
+    
+    def modulate_pitch_with_sin(self, freq, amp):
+        """Modulate pitch using sine wave based on absolute note onset"""
+        for note in self.note_list:
+            note.pitch += int(math.sin(note.onset * freq) * amp)
+            if note.pitch < 0:
+                note.pitch = 0
+            if note.pitch > 127:
+                note.pitch = 127
+        return
+    
+    def modulate_duration_with_sin(self, freq, amp):
+        """Modulate duration using sine wave based on absolute note onset"""
+        for note in self.note_list:
+            note.duration += math.sin(note.onset * freq) * amp
+            if note.duration < 0:
+                note.duration = 0
+        return
+    
+    def modulate_velocity_with_sin(self, freq, amp):
+        """Modulate velocity using sine wave based on absolute note onset"""
+        for note in self.note_list:
+            note.velocity += int(math.sin(note.onset * freq) * amp)
+            if note.velocity < 0:
+                note.velocity = 0
+            if note.velocity > 127:
+                note.velocity = 127
+        return
+    
+    def modulate_onset_with_sin(self, freq, amp):
+        """Modulate onset using sine wave based on absolute note onset"""
+        for note in self.note_list:
+            note.onset += math.sin(note.onset * freq) * amp
+            if note.onset < 0:
+                note.onset = 0
+        return
+    
+    def modulate_pitch_with_sin_phase_by_bar(self, freq, amp):
+        """Modulate pitch using sine wave with phase reset at bar onset"""
+        for note in self.note_list:
+            phase = (note.onset - self.bar_onset) * freq
+            note.pitch += int(math.sin(phase) * amp)
+            if note.pitch < 0:
+                note.pitch = 0
+            if note.pitch > 127:
+                note.pitch = 127
+        return
+    
+    def modulate_duration_with_sin_phase_by_bar(self, freq, amp):
+        """Modulate duration using sine wave with phase reset at bar onset"""
+        for note in self.note_list:
+            phase = (note.onset - self.bar_onset) * freq
+            note.duration += math.sin(phase) * amp
+            if note.duration < 0:
+                note.duration = 0.001
+        return
+    
+    def modulate_velocity_with_sin_phase_by_bar(self, freq, amp):
+        """Modulate velocity using sine wave with phase reset at bar onset"""
+        for note in self.note_list:
+            phase = (note.onset - self.bar_onset) * freq
+            note.velocity += int(math.sin(phase) * amp)
+            if note.velocity < 0:
+                note.velocity = 0
+            if note.velocity > 127:
+                note.velocity = 127
+        return
+    
+    def modulate_onset_with_sin_phase_by_bar(self, freq, amp):
+        """Modulate onset using sine wave with phase reset at bar onset"""
+        for note in self.note_list:
+            phase = (note.onset - self.bar_onset) * freq
+            note.onset += math.sin(phase) * amp
+            if note.onset < 0:
+                note.onset = 0
+        return
 
 
 class BarCollection:
