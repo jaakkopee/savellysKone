@@ -26,6 +26,108 @@ class Grammar:
     def __repr__(self):
         return self.__str__()
 
+def split_alternatives(text):
+    """Split by | but only outside of brackets"""
+    alternatives = []
+    current = ""
+    bracket_depth = 0
+    
+    for char in text:
+        if char == "[":
+            bracket_depth += 1
+            current += char
+        elif char == "]":
+            bracket_depth -= 1
+            current += char
+            if bracket_depth < 0:
+                raise ValueError(f"Unmatched closing bracket ] in: {text}")
+        elif char == "|" and bracket_depth == 0:
+            # This | is outside brackets, so it's a rule alternative separator
+            alternatives.append(current.strip())
+            current = ""
+        else:
+            current += char
+    
+    # Check for unmatched opening brackets
+    if bracket_depth > 0:
+        raise ValueError(f"Unmatched opening bracket [ in: {text}")
+    
+    # Don't forget the last alternative
+    if current.strip():
+        alternatives.append(current.strip())
+    
+    return alternatives
+
+def expand_brackets(string):
+    """Expand bracketed alternatives [a | b | c] by choosing one randomly.
+    Processes brackets from outermost to innermost, one level at a time."""
+    
+    # Keep expanding until no brackets remain
+    while "[" in string:
+        result = ""
+        i = 0
+        
+        while i < len(string):
+            if string[i] == "[":
+                # Find the matching closing bracket
+                bracket_depth = 1
+                j = i + 1
+                while j < len(string) and bracket_depth > 0:
+                    if string[j] == "[":
+                        bracket_depth += 1
+                    elif string[j] == "]":
+                        bracket_depth -= 1
+                    j += 1
+                
+                if bracket_depth != 0:
+                    raise ValueError(f"Unmatched brackets in: {string}")
+                
+                # Extract content between brackets (excluding [ and ])
+                bracketed_content = string[i+1:j-1]
+                
+                # Split by | to get alternatives at THIS level only
+                # We need to respect nested brackets when splitting
+                alternatives = split_bracket_alternatives(bracketed_content)
+                
+                # Choose one alternative randomly
+                chosen = random.choice(alternatives)
+                
+                result += chosen
+                i = j
+            else:
+                result += string[i]
+                i += 1
+        
+        string = result
+    
+    return string
+
+def split_bracket_alternatives(text):
+    """Split by | but only at the top level (not inside nested brackets)"""
+    alternatives = []
+    current = ""
+    bracket_depth = 0
+    
+    for char in text:
+        if char == "[":
+            bracket_depth += 1
+            current += char
+        elif char == "]":
+            bracket_depth -= 1
+            current += char
+        elif char == "|" and bracket_depth == 0:
+            # This | is at the top level
+            alternatives.append(current.strip())
+            current = ""
+        else:
+            current += char
+    
+    # Don't forget the last alternative
+    if current.strip():
+        alternatives.append(current.strip())
+    
+    return alternatives
+
 def parse_grammar(f):
     grammar = Grammar()
     for line in f:
@@ -33,8 +135,8 @@ def parse_grammar(f):
         if line:
             lhs, rhs_alternatives = line.split("->")
             lhs = lhs.strip()
-            alternatives = rhs_alternatives.split("|")
-            alternatives = [alt.strip() for alt in alternatives]
+            # Use smart splitting that respects brackets
+            alternatives = split_alternatives(rhs_alternatives)
             for alternative in alternatives:
                 # Check for direct left recursion: LHS cannot be the first symbol on RHS
                 # Note: Right recursion (LHS at end) is valid and allowed
@@ -51,7 +153,9 @@ def parse_grammar(f):
 def generate_from_symbol(grammar, symbol):
     options = [rule.rhs for rule in grammar.rules if rule.lhs == symbol]
     if options:
-        return random.choice(options)
+        chosen = random.choice(options)
+        # Expand brackets in the chosen rule before returning
+        return expand_brackets(chosen)
     return symbol
 
 def generate_from_string(grammar, string):
