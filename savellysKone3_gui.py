@@ -331,6 +331,9 @@ class SavellysKoneGUI:
         # Create menu bar
         self.create_menu_bar()
         
+        # Create status bar at bottom FIRST (so it stays at bottom)
+        self.create_status_bar()
+        
         # Create main notebook for tabs
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(fill='both', expand=True, padx=10, pady=10)
@@ -341,28 +344,45 @@ class SavellysKoneGUI:
         self.create_bar_collection_tab()
         self.create_song_modulation_tab()
         self.create_piano_roll_tab()
-        
-        # Create status bar at bottom
-        self.create_status_bar()
     
     def create_status_bar(self):
         """Create status bar at the bottom of the window"""
         status_frame = tk.Frame(self.root, relief='sunken', borderwidth=1)
         status_frame.pack(side='bottom', fill='x')
         
-        self.status_label = tk.Label(status_frame, text="Ready", 
-                                      anchor='w', padx=10, pady=3)
-        self.status_label.pack(side='left', fill='x', expand=True)
-        
-        # Add current object indicator
+        # Add current object indicator (pack first on right)
         self.object_status_label = tk.Label(status_frame, text="No song/bar loaded", 
                                              anchor='e', padx=10, pady=3, foreground='gray')
         self.object_status_label.pack(side='right')
+        
+        # Add global tempo control (pack second on right)
+        tempo_frame = tk.Frame(status_frame)
+        tempo_frame.pack(side='right', padx=10)
+        
+        tk.Label(tempo_frame, text="Tempo (BPM):").pack(side='left', padx=2)
+        self.global_tempo_var = tk.StringVar(value="120")
+        tempo_entry = tk.Entry(tempo_frame, textvariable=self.global_tempo_var, width=6)
+        tempo_entry.pack(side='left', padx=2)
+        
+        # Status label fills remaining space on left
+        self.status_label = tk.Label(status_frame, text="Ready", 
+                                      anchor='w', padx=10, pady=3)
+        self.status_label.pack(side='left', fill='x', expand=True)
     
     def update_status(self, message):
         """Update the status bar message"""
         self.status_label.config(text=message)
         self.root.after(3000, lambda: self.status_label.config(text="Ready"))
+    
+    def get_tempo(self):
+        """Get the global tempo value from the input field"""
+        try:
+            tempo = int(self.global_tempo_var.get())
+            if tempo <= 0:
+                tempo = 120
+            return tempo
+        except ValueError:
+            return 120  # Default to 120 BPM if invalid
     
     def create_menu_bar(self):
         """Create the menu bar with File menu for MIDI operations"""
@@ -1558,7 +1578,7 @@ $ioi08 -> 0.5"""
             # Create a temporary song with just this bar
             temp_song = sk3.Song(name="TempBar", num_bars=1)
             temp_song.bar_list = [self.current_bar]
-            temp_song.make_midi_file(filename)
+            temp_song.make_midi_file(filename, tempo=self.get_tempo())
             
             # Validate the exported file
             is_valid = self.validate_midi_file(filename)
@@ -1587,7 +1607,7 @@ $ioi08 -> 0.5"""
             # Create temporary song and export
             temp_song = sk3.Song(name="TempBar", num_bars=1)
             temp_song.bar_list = [self.current_bar]
-            temp_song.make_midi_file(tmp_filename)
+            temp_song.make_midi_file(tmp_filename, tempo=self.get_tempo())
             
             # Validate the file
             is_valid = self.validate_midi_file(tmp_filename)
@@ -1913,7 +1933,7 @@ $ioi08 -> 0.5"""
             
             if filename:
                 # Export to MIDI
-                self.bar_collection.make_midi_file(filename, "BarCollection")
+                self.bar_collection.make_midi_file(filename, "BarCollection", tempo=self.get_tempo())
                 self.update_status(f"Collection exported to {os.path.basename(filename)}")
                 messagebox.showinfo("Success", 
                                     f"Bar collection exported successfully!\n"
@@ -2259,7 +2279,7 @@ $ioi08 -> 0.5"""
             try:
                 with tempfile.NamedTemporaryFile(suffix='.mid', delete=False) as tmp_file:
                     tmp_filename = tmp_file.name
-                self.current_song.make_midi_file(tmp_filename)
+                self.current_song.make_midi_file(tmp_filename, tempo=self.get_tempo())
                 is_valid = self.validate_midi_file(tmp_filename)
                 try:
                     os.unlink(tmp_filename)
@@ -2325,7 +2345,7 @@ $ioi08 -> 0.5"""
             try:
                 with tempfile.NamedTemporaryFile(suffix='.mid', delete=False) as tmp_file:
                     tmp_filename = tmp_file.name
-                self.current_song.make_midi_file(tmp_filename)
+                self.current_song.make_midi_file(tmp_filename, tempo=self.get_tempo())
                 is_valid = self.validate_midi_file(tmp_filename)
                 try:
                     os.unlink(tmp_filename)
@@ -2538,7 +2558,7 @@ $ioi08 -> 0.5"""
                 return
             
             # Export the song
-            self.current_song.make_midi_file(filename)
+            self.current_song.make_midi_file(filename, tempo=self.get_tempo())
             
             # Automatically validate the exported file
             self.validate_midi_file(filename)
@@ -2561,7 +2581,7 @@ $ioi08 -> 0.5"""
                 tmp_filename = tmp_file.name
             
             # Export song to temp file
-            self.current_song.make_midi_file(tmp_filename)
+            self.current_song.make_midi_file(tmp_filename, tempo=self.get_tempo())
             
             # Validate the file
             self.validate_midi_file(tmp_filename)
@@ -2685,7 +2705,7 @@ $ioi08 -> 0.5"""
             
             # Export song to temp MIDI file
             print(f"Creating temporary MIDI file: {temp_path}")
-            self.current_song.make_midi_file(temp_path)
+            self.current_song.make_midi_file(temp_path, tempo=self.get_tempo())
             print(f"MIDI file created, size: {os.path.getsize(temp_path)} bytes")
             
             # Build command string - MIDI file must come first!

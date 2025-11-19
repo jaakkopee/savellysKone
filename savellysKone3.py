@@ -371,11 +371,11 @@ class BarCollection:
         """Remove all bars"""
         self.bars = []
     
-    def make_midi_file(self, filename, name="BarCollection"):
+    def make_midi_file(self, filename, name="BarCollection", tempo=120):
         """Export all bars to a MIDI file"""
         midi_file = MIDIFile(numTracks=1, removeDuplicates=False, deinterleave=False, 
                             adjust_origin=False, file_format=0)
-        midi_file.addTempo(0, 0, 120)
+        midi_file.addTempo(0, 0, tempo)
         midi_file.addTrackName(0, 0, name)
         
         note_count = 0
@@ -517,13 +517,13 @@ class Song:
             print(f"  Bar {i}: onset was {prev_onset}, added {bar.ioi}*{len(bar.note_list)}={bar.ioi*len(bar.note_list)}, new onset={onset}")
         return
     
-    def make_midi_file(self, filename):
+    def make_midi_file(self, filename, tempo=120):
         # Create MIDI file with 1 track, format 0 (single track)
         # Disable removeDuplicates to ensure all notes are written
         midi_file = MIDIFile(numTracks=1, removeDuplicates=False, deinterleave=False, 
                             adjust_origin=False, file_format=0)
         # Add tempo to track 0
-        midi_file.addTempo(0, 0, 120)
+        midi_file.addTempo(0, 0, tempo)
         # Add track name
         midi_file.addTrackName(0, 0, self.name)
         # Add notes to track 0, channel 0
