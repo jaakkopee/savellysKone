@@ -86,6 +86,20 @@ class ListGenerator:
                             conversion_errors.append(f"Velocity {i}: '{note}' cannot be converted to integer")
                             raise
                     self.list = converted
+                elif self.type == "ioi":
+                    converted = []
+                    for i, note in enumerate(self.list):
+                        try:
+                            val = float(note)
+                            if val < 0:
+                                conversion_errors.append(f"IOI {i}: {note} -> {val} (negative IOI)")
+                            elif val > 100:
+                                conversion_errors.append(f"IOI {i}: {note} -> {val} (unusually long)")
+                            converted.append(val)
+                        except ValueError:
+                            conversion_errors.append(f"IOI {i}: '{note}' cannot be converted to float")
+                            raise
+                    self.list = converted
             except ValueError as e:
                 print(f"\n{'='*60}")
                 print(f"ERROR: Cannot convert grammar output to {self.type} type")
@@ -150,10 +164,11 @@ class Note:
         return    
     
 class Bar:
-    def __init__(self, onset=0, ioi=0.75, pitch_list=None, duration_list=None, velocity_list=None, num_notes=None):
+    def __init__(self, onset=0, ioi=0.75, pitch_list=None, duration_list=None, velocity_list=None, num_notes=None, ioi_list=None):
         self.pitch_list = pitch_list
         self.duration_list = duration_list
         self.velocity_list = velocity_list
+        self.ioi_list = ioi_list if ioi_list is not None else []
         self.note_list = []
         self.bar_onset = onset
         self.ioi = ioi
@@ -173,17 +188,24 @@ class Bar:
             max_len = self.num_notes
             print(f"DEBUG: Using user-specified number of notes: {max_len}")
         else:
-            # Use the LONGEST list to determine number of notes
-            max_len = max(len(self.pitch_list), len(self.duration_list), len(self.velocity_list))
+            # Use the LONGEST list to determine number of notes (include ioi_list if present)
+            list_lengths = [len(self.pitch_list), len(self.duration_list), len(self.velocity_list)]
+            if self.ioi_list:
+                list_lengths.append(len(self.ioi_list))
+            max_len = max(list_lengths)
             print(f"DEBUG: Using longest list length: {max_len}")
         
         # Other lists will wrap around using modulo (circular buffer)
         # Info about list cycling behavior
-        if not (len(self.pitch_list) == len(self.duration_list) == len(self.velocity_list)):
-            print(f"DEBUG: Using circular buffer - pitch:{len(self.pitch_list)}, duration:{len(self.duration_list)}, velocity:{len(self.velocity_list)}")
+        all_same_length = (len(self.pitch_list) == len(self.duration_list) == len(self.velocity_list))
+        if self.ioi_list:
+            all_same_length = all_same_length and (len(self.ioi_list) == len(self.pitch_list))
+        
+        if not all_same_length:
+            print(f"DEBUG: Using circular buffer - pitch:{len(self.pitch_list)}, duration:{len(self.duration_list)}, velocity:{len(self.velocity_list)}, ioi:{len(self.ioi_list) if self.ioi_list else 0}")
             print(f"       Creating {max_len} notes with lists wrapping independently")
         
-        print(f"DEBUG make_note_list: bar_onset={self.bar_onset}, ioi={self.ioi}, num_notes={max_len}")
+        print(f"DEBUG make_note_list: bar_onset={self.bar_onset}, ioi={self.ioi}, ioi_list={'yes' if self.ioi_list else 'no'}, num_notes={max_len}")
         
         for i in range(max_len):
             note = Note()
@@ -195,7 +217,13 @@ class Bar:
             self.note_list.append(note)
             if i < 3:  # Print first 3 notes
                 print(f"  Note {i}: onset={note.onset}, pitch={note.pitch}, dur={note.duration}, vel={note.velocity}")
-            delta += self.ioi
+            
+            # Use per-note IOI from ioi_list if available, otherwise use default self.ioi
+            if self.ioi_list:
+                current_ioi = self.ioi_list[i % len(self.ioi_list)]
+                delta += current_ioi
+            else:
+                delta += self.ioi
         return
     
     def reverse_note_list(self):
@@ -398,7 +426,7 @@ class BarCollection:
     
 
 class Song:
-    def __init__(self, name="skTrack", num_bars=4, ioi=1.0, pitch_generator=None, duration_generator=None, velocity_generator=None, generate_every_bar=False, bar_collection=None):
+    def __init__(self, name="skTrack", num_bars=4, ioi=1.0, pitch_generator=None, duration_generator=None, velocity_generator=None, ioi_generator=None, generate_every_bar=False, bar_collection=None):
         self.name = name
         self.bar_list = []
         self.ioi = ioi
@@ -406,9 +434,11 @@ class Song:
         self.pitch_generator = pitch_generator
         self.duration_generator = duration_generator
         self.velocity_generator = velocity_generator
+        self.ioi_generator = ioi_generator
         self.pitch_list = []
         self.duration_list = []
         self.velocity_list = []
+        self.ioi_list = []
         self.generate_every_bar = generate_every_bar
         self.bar_collection = bar_collection  # Optional BarCollection to use instead of generating
 
@@ -431,8 +461,14 @@ class Song:
         else:
             self.velocity_list = [100]*8
             print(f"    Using default velocity_list: {len(self.velocity_list)} notes")
+        if self.ioi_generator:
+            self.ioi_list = self.ioi_generator.generate_list()
+            print(f"    Generated ioi_list: {len(self.ioi_list)} values")
+        else:
+            self.ioi_list = []
+            print(f"    Using default IOI (0.5 seconds per note)")
 
-        print(f"    Lists: pitch={len(self.pitch_list)}, duration={len(self.duration_list)}, velocity={len(self.velocity_list)}")
+        print(f"    Lists: pitch={len(self.pitch_list)}, duration={len(self.duration_list)}, velocity={len(self.velocity_list)}, ioi={len(self.ioi_list)}")
         print(f"    Using circular buffer for bars (lists wrap independently)")
 
         return
@@ -472,8 +508,8 @@ class Song:
         for i in range(self.num_bars):
             if self.generate_every_bar:
                 self.generate_parameter_lists()
-                print(f"  Bar {i}: Generated lists - pitch:{len(self.pitch_list)}, duration:{len(self.duration_list)}, velocity:{len(self.velocity_list)}")
-            bar = Bar(onset, self.ioi, self.pitch_list, self.duration_list, self.velocity_list)
+                print(f"  Bar {i}: Generated lists - pitch:{len(self.pitch_list)}, duration:{len(self.duration_list)}, velocity:{len(self.velocity_list)}, ioi:{len(self.ioi_list)}")
+            bar = Bar(onset, self.ioi, self.pitch_list, self.duration_list, self.velocity_list, ioi_list=self.ioi_list)
             bar.make_note_list()
             self.bar_list.append(bar)
             prev_onset = onset

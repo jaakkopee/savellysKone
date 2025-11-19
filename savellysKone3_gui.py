@@ -434,6 +434,11 @@ Created with Python and Tkinter
         grammar_notebook.add(velocity_tab, text="Velocity Grammar")
         self.create_grammar_section(velocity_tab, "velocity")
         
+        # IOI Grammar Tab
+        ioi_tab = ttk.Frame(grammar_notebook)
+        grammar_notebook.add(ioi_tab, text="IOI Grammar")
+        self.create_grammar_section(ioi_tab, "ioi")
+        
         # Generate All button
         generate_all_frame = ttk.Frame(tab)
         generate_all_frame.pack(fill='x', padx=10, pady=5)
@@ -513,7 +518,7 @@ $dur07 -> 1.0
 $dur08 -> 1.0"""
             self.duration_grammar_text.insert('1.0', default_grammar)
             
-        else:  # velocity
+        elif grammar_type == "velocity":
             self.velocity_grammar_text = scrolledtext.ScrolledText(grammar_frame, height=10, width=80)
             self.velocity_grammar_text.pack(fill='both', expand=True, pady=5)
             
@@ -538,6 +543,32 @@ $vel06 -> 95
 $vel07 -> 85
 $vel08 -> 110"""
             self.velocity_grammar_text.insert('1.0', default_grammar)
+            
+        else:  # ioi
+            self.ioi_grammar_text = scrolledtext.ScrolledText(grammar_frame, height=10, width=80)
+            self.ioi_grammar_text.pack(fill='both', expand=True, pady=5)
+            
+            # Add validation button and status label
+            validate_frame = ttk.Frame(grammar_frame)
+            validate_frame.pack(fill='x', pady=2)
+            ttk.Button(validate_frame, text="Validate Grammar", 
+                      command=lambda: self.validate_grammar("ioi")).pack(side='left', padx=5)
+            self.ioi_validation_label = ttk.Label(validate_frame, text="", foreground="gray")
+            self.ioi_validation_label.pack(side='left', padx=5, fill='x', expand=True)
+            
+            # Set default IOI grammar
+            default_grammar = """$S -> $phrase01 $phrase02
+$phrase01 -> $ioi01 $ioi02 $ioi03 $ioi04
+$phrase02 -> $ioi05 $ioi06 $ioi07 $ioi08
+$ioi01 -> 0.5
+$ioi02 -> 0.5
+$ioi03 -> 0.5
+$ioi04 -> 0.5
+$ioi05 -> 0.25
+$ioi06 -> 0.25
+$ioi07 -> 0.5
+$ioi08 -> 0.5"""
+            self.ioi_grammar_text.insert('1.0', default_grammar)
         
         # Parameters frame
         params_frame = ttk.Frame(grammar_frame)
@@ -569,7 +600,7 @@ $vel08 -> 110"""
             self.duration_generate_button = ttk.Button(grammar_frame, text="Generate Duration List", 
                        command=lambda: self.generate_single_list("duration"))
             self.duration_generate_button.pack(pady=5)
-        else:  # velocity
+        elif grammar_type == "velocity":
             self.velocity_min_length_var = tk.StringVar(value="8")
             ttk.Entry(params_frame, textvariable=self.velocity_min_length_var, width=10).pack(side='left', padx=5)
             # Generate Every Bar checkbox
@@ -581,6 +612,18 @@ $vel08 -> 110"""
             self.velocity_generate_button = ttk.Button(grammar_frame, text="Generate Velocity List", 
                        command=lambda: self.generate_single_list("velocity"))
             self.velocity_generate_button.pack(pady=5)
+        else:  # ioi
+            self.ioi_min_length_var = tk.StringVar(value="8")
+            ttk.Entry(params_frame, textvariable=self.ioi_min_length_var, width=10).pack(side='left', padx=5)
+            # Generate Every Bar checkbox
+            self.ioi_geb_var = tk.BooleanVar(value=False)
+            ttk.Checkbutton(params_frame, text="Generate Every Bar (GEB)", 
+                           variable=self.ioi_geb_var,
+                           command=self.update_geb_status).pack(side='left', padx=20)
+            # Generate button for this specific grammar
+            self.ioi_generate_button = ttk.Button(grammar_frame, text="Generate IOI List", 
+                       command=lambda: self.generate_single_list("ioi"))
+            self.ioi_generate_button.pack(pady=5)
         
         # Output section for this grammar
         output_frame = ttk.LabelFrame(parent, text=f"Generated {grammar_type.capitalize()} List", padding=10)
@@ -592,9 +635,12 @@ $vel08 -> 110"""
         elif grammar_type == "duration":
             self.duration_output_text = scrolledtext.ScrolledText(output_frame, height=5, width=80)
             self.duration_output_text.pack(fill='both', expand=True)
-        else:  # velocity
+        elif grammar_type == "velocity":
             self.velocity_output_text = scrolledtext.ScrolledText(output_frame, height=5, width=80)
             self.velocity_output_text.pack(fill='both', expand=True)
+        else:  # ioi
+            self.ioi_output_text = scrolledtext.ScrolledText(output_frame, height=5, width=80)
+            self.ioi_output_text.pack(fill='both', expand=True)
         
     def create_bar_manipulation_tab(self):
         """Create the Bar Manipulation tab"""
@@ -645,6 +691,14 @@ $vel08 -> 110"""
         self.velocity_list_var = tk.StringVar(value="60, 80, 100, 90, 70, 95, 85, 110")
         ttk.Entry(velocity_frame, textvariable=self.velocity_list_var, width=50).pack(side='left', padx=5)
         
+        # IOI list input (display/edit generated values)
+        ioi_frame = ttk.Frame(creation_frame)
+        ioi_frame.pack(fill='x', pady=2)
+        self.ioi_label = ttk.Label(ioi_frame, text="IOI List (from grammar):")
+        self.ioi_label.pack(side='left', padx=5)
+        self.ioi_list_var = tk.StringVar(value="")
+        ttk.Entry(ioi_frame, textvariable=self.ioi_list_var, width=50).pack(side='left', padx=5)
+        
         # Bar parameters
         params_frame = ttk.Frame(creation_frame)
         params_frame.pack(fill='x', pady=5)
@@ -652,10 +706,6 @@ $vel08 -> 110"""
         ttk.Label(params_frame, text="Onset:").pack(side='left', padx=5)
         self.onset_var = tk.StringVar(value="0")
         ttk.Entry(params_frame, textvariable=self.onset_var, width=10).pack(side='left', padx=5)
-        
-        ttk.Label(params_frame, text="IOI (Inter-Onset Interval):").pack(side='left', padx=5)
-        self.ioi_var = tk.StringVar(value="0.75")
-        ttk.Entry(params_frame, textvariable=self.ioi_var, width=10).pack(side='left', padx=5)
         
         ttk.Label(params_frame, text="Number of Notes:").pack(side='left', padx=5)
         self.num_notes_var = tk.StringVar(value="")
@@ -787,11 +837,16 @@ $vel08 -> 110"""
                 min_length_str = self.duration_min_length_var.get().strip()
                 min_length = int(min_length_str) if min_length_str else 8
                 output_widget = self.duration_output_text
-            else:  # velocity
+            elif grammar_type == "velocity":
                 grammar_str = self.velocity_grammar_text.get('1.0', 'end-1c')
                 min_length_str = self.velocity_min_length_var.get().strip()
                 min_length = int(min_length_str) if min_length_str else 8
                 output_widget = self.velocity_output_text
+            else:  # ioi
+                grammar_str = self.ioi_grammar_text.get('1.0', 'end-1c')
+                min_length_str = self.ioi_min_length_var.get().strip()
+                min_length = int(min_length_str) if min_length_str else 8
+                output_widget = self.ioi_output_text
             
             # Create ListGenerator
             generator = sk3.ListGenerator(grammar_str, min_length, grammar_type)
@@ -810,11 +865,16 @@ $vel08 -> 110"""
                 # Update Bar Manipulation tab
                 duration_str = ", ".join(str(d) for d in generated_list)
                 self.duration_list_var.set(duration_str)
-            else:  # velocity
+            elif grammar_type == "velocity":
                 self.generated_velocity_list = generated_list
                 # Update Bar Manipulation tab
                 velocity_str = ", ".join(str(v) for v in generated_list)
                 self.velocity_list_var.set(velocity_str)
+            else:  # ioi
+                self.generated_ioi_list = generated_list
+                # Update Bar Manipulation tab IOI list field
+                ioi_str = ", ".join(f"{i:.3f}" for i in generated_list)
+                self.ioi_list_var.set(ioi_str)
             
             # Display result
             output_widget.delete('1.0', 'end')
@@ -887,7 +947,7 @@ $vel08 -> 110"""
                     self.velocity_list_var.set('GEB')
     
     def generate_all_lists(self):
-        """Generate all three lists (pitch, duration, velocity)"""
+        """Generate all lists (pitch, duration, velocity, ioi)"""
         try:
             # Generate pitch list
             self.generate_single_list("pitch")
@@ -895,6 +955,8 @@ $vel08 -> 110"""
             self.generate_single_list("duration")
             # Generate velocity list
             self.generate_single_list("velocity")
+            # Generate IOI list
+            self.generate_single_list("ioi")
             
             # Display all lists in combined output
             self.all_output_text.delete('1.0', 'end')
@@ -910,7 +972,11 @@ $vel08 -> 110"""
             
             if hasattr(self, 'generated_velocity_list'):
                 self.all_output_text.insert('end', f"Velocity List ({len(self.generated_velocity_list)} items):\n")
-                self.all_output_text.insert('end', f"{self.generated_velocity_list}\n")
+                self.all_output_text.insert('end', f"{self.generated_velocity_list}\n\n")
+            
+            if hasattr(self, 'generated_ioi_list'):
+                self.all_output_text.insert('end', f"IOI List ({len(self.generated_ioi_list)} items):\n")
+                self.all_output_text.insert('end', f"{self.generated_ioi_list}\n")
             
             # Update status
             self.update_status("All lists generated and transferred to Bar Manipulation tab")
@@ -918,7 +984,7 @@ $vel08 -> 110"""
             # Don't show multiple messageboxes since generate_single_list already shows them
             # Just show final confirmation
             self.root.after(100, lambda: messagebox.showinfo("Success", 
-                "All lists generated successfully!\n\nBar Manipulation tab has been updated with all three lists."))
+                "All lists generated successfully!\n\nBar Manipulation tab has been updated with all lists."))
             
         except Exception as e:
             messagebox.showerror("Error", f"Error generating all lists: {str(e)}")
@@ -940,6 +1006,11 @@ $vel08 -> 110"""
             self.duration_list_var.set(duration_str)
             self.velocity_list_var.set(velocity_str)
             
+            # Also transfer IOI list if it exists
+            if hasattr(self, 'generated_ioi_list'):
+                ioi_str = ", ".join(f"{i:.3f}" for i in self.generated_ioi_list)
+                self.ioi_list_var.set(ioi_str)
+            
             # Switch to Bar Manipulation tab
             self.notebook.select(1)  # Index 1 is Bar Manipulation tab
             
@@ -958,9 +1029,12 @@ $vel08 -> 110"""
             elif grammar_type == "duration":
                 grammar_text = self.duration_grammar_text.get('1.0', 'end-1c')
                 status_label = self.duration_validation_label
-            else:  # velocity
+            elif grammar_type == "velocity":
                 grammar_text = self.velocity_grammar_text.get('1.0', 'end-1c')
                 status_label = self.velocity_validation_label
+            else:  # ioi
+                grammar_text = self.ioi_grammar_text.get('1.0', 'end-1c')
+                status_label = self.ioi_validation_label
             
             # Validate using the grammar validator
             is_valid, message = grammar_validator.validate_grammar(grammar_text)
@@ -991,8 +1065,10 @@ $vel08 -> 110"""
                 status_label = self.pitch_validation_label
             elif grammar_type == "duration":
                 status_label = self.duration_validation_label
-            else:
+            elif grammar_type == "velocity":
                 status_label = self.velocity_validation_label
+            else:  # ioi
+                status_label = self.ioi_validation_label
             
             error_msg = str(e)
             if len(error_msg) > 80:
@@ -1048,26 +1124,57 @@ $vel08 -> 110"""
             else:
                 velocity_list = [int(x.strip()) for x in self.velocity_list_var.get().split(',')]
             
+            # Generate IOI list from grammar if grammar exists, or read from input field
+            ioi_list = []
+            if hasattr(self, 'ioi_grammar_text'):
+                ioi_grammar = self.ioi_grammar_text.get('1.0', 'end-1c').strip()
+                if ioi_grammar:  # Only generate if grammar is not empty
+                    ioi_min_length_str = self.ioi_min_length_var.get().strip()
+                    ioi_min_length = int(ioi_min_length_str) if ioi_min_length_str else 8
+                    ioi_generator = sk3.ListGenerator(ioi_grammar, ioi_min_length, "ioi")
+                    ioi_list = ioi_generator.generate_list()
+                    print(f"Bar creation: Generated IOI list from grammar: {ioi_list}")
+                    
+                    # Update the display field with generated IOI values
+                    ioi_str = ', '.join([f"{val:.3f}" for val in ioi_list])
+                    self.ioi_list_var.set(ioi_str)
+                elif self.ioi_list_var.get().strip():
+                    # No grammar but field has values - parse from field
+                    ioi_list = [float(x.strip()) for x in self.ioi_list_var.get().split(',') if x.strip()]
+                    print(f"Bar creation: Using IOI list from input field: {ioi_list}")
+            
             # Apply list length behavior
             list_behavior = self.bar_list_behavior_var.get()
             
             if list_behavior == "truncate":
                 # Cut all lists to the shortest length
-                min_length = min(len(pitch_list), len(duration_list), len(velocity_list))
+                list_lengths = [len(pitch_list), len(duration_list), len(velocity_list)]
+                if ioi_list:
+                    list_lengths.append(len(ioi_list))
+                min_length = min(list_lengths)
                 pitch_list = pitch_list[:min_length]
                 duration_list = duration_list[:min_length]
                 velocity_list = velocity_list[:min_length]
+                if ioi_list:
+                    ioi_list = ioi_list[:min_length]
                 print(f"Bar creation: Truncated to shortest ({min_length} notes)")
                 
             elif list_behavior == "loop_longest":
                 # Loop shorter lists to match the longest
-                max_length = max(len(pitch_list), len(duration_list), len(velocity_list))
+                list_lengths = [len(pitch_list), len(duration_list), len(velocity_list)]
+                if ioi_list:
+                    list_lengths.append(len(ioi_list))
+                max_length = max(list_lengths)
                 while len(pitch_list) < max_length:
                     pitch_list.extend(pitch_list[:max_length - len(pitch_list)])
                 while len(duration_list) < max_length:
                     duration_list.extend(duration_list[:max_length - len(duration_list)])
                 while len(velocity_list) < max_length:
                     velocity_list.extend(velocity_list[:max_length - len(velocity_list)])
+                if ioi_list:
+                    while len(ioi_list) < max_length:
+                        ioi_list.extend(ioi_list[:max_length - len(ioi_list)])
+                    ioi_list = ioi_list[:max_length]
                 pitch_list = pitch_list[:max_length]
                 duration_list = duration_list[:max_length]
                 velocity_list = velocity_list[:max_length]
@@ -1075,19 +1182,20 @@ $vel08 -> 110"""
                 
             # If circular buffer mode, lists remain as-is and will be wrapped by Bar.make_note_list()
             elif list_behavior == "circular":
-                print(f"Bar creation: Using circular buffer (pitch:{len(pitch_list)}, duration:{len(duration_list)}, velocity:{len(velocity_list)})")
+                ioi_info = f", ioi:{len(ioi_list)}" if ioi_list else ""
+                print(f"Bar creation: Using circular buffer (pitch:{len(pitch_list)}, duration:{len(duration_list)}, velocity:{len(velocity_list)}{ioi_info})")
             
             # Get parameters
             onset_str = self.onset_var.get().strip()
             onset = float(onset_str) if onset_str else 0.0
-            ioi = float(self.ioi_var.get())
+            ioi = 0.5  # Default IOI (fallback when IOI list is not provided)
             
             # Get number of notes (optional)
             num_notes_str = self.num_notes_var.get().strip()
             num_notes = int(num_notes_str) if num_notes_str else None
             
-            # Create Bar
-            self.current_bar = sk3.Bar(onset, ioi, pitch_list, duration_list, velocity_list, num_notes=num_notes)
+            # Create Bar with IOI list if available
+            self.current_bar = sk3.Bar(onset, ioi, pitch_list, duration_list, velocity_list, num_notes=num_notes, ioi_list=ioi_list if ioi_list else None)
             self.current_bar.make_note_list()
             
             # Display bar
@@ -1862,10 +1970,6 @@ $vel08 -> 110"""
         self.num_bars_var = tk.StringVar(value="4")
         ttk.Entry(params_frame, textvariable=self.num_bars_var, width=10).pack(side='left', padx=5)
         
-        ttk.Label(params_frame, text="IOI:").pack(side='left', padx=5)
-        self.song_ioi_var = tk.StringVar(value="0.75")
-        ttk.Entry(params_frame, textvariable=self.song_ioi_var, width=10).pack(side='left', padx=5)
-        
         # Buttons for song creation
         buttons_frame = ttk.Frame(creation_frame)
         buttons_frame.pack(pady=5)
@@ -2041,19 +2145,21 @@ $vel08 -> 110"""
             pitch_geb = self.pitch_geb_var.get() if hasattr(self, 'pitch_geb_var') else False
             duration_geb = self.duration_geb_var.get() if hasattr(self, 'duration_geb_var') else False
             velocity_geb = self.velocity_geb_var.get() if hasattr(self, 'velocity_geb_var') else False
+            ioi_geb = self.ioi_geb_var.get() if hasattr(self, 'ioi_geb_var') else False
             
             # Get song parameters
             name = self.song_name_var.get()
             num_bars = int(self.num_bars_var.get())
-            ioi = float(self.song_ioi_var.get())
+            ioi = 0.5  # Default IOI (fallback when IOI list is not provided)
             
             # Determine if we need to use generate_every_bar
-            generate_every_bar = pitch_geb or duration_geb or velocity_geb
+            generate_every_bar = pitch_geb or duration_geb or velocity_geb or ioi_geb
             
             # Create generators for GEB parameters
             pitch_generator = None
             duration_generator = None
             velocity_generator = None
+            ioi_generator = None
             
             if pitch_geb:
                 # Create pitch generator from grammar
@@ -2076,6 +2182,14 @@ $vel08 -> 110"""
                 velocity_min_length = int(velocity_min_length_str) if velocity_min_length_str else 8
                 velocity_generator = sk3.ListGenerator(velocity_grammar, velocity_min_length, "velocity")
             
+            # Create IOI generator if IOI grammar exists or IOI GEB is enabled
+            if hasattr(self, 'ioi_grammar_text'):
+                ioi_grammar = self.ioi_grammar_text.get('1.0', 'end-1c').strip()
+                if ioi_grammar:  # Only create generator if grammar is not empty
+                    ioi_min_length_str = self.ioi_min_length_var.get().strip()
+                    ioi_min_length = int(ioi_min_length_str) if ioi_min_length_str else 8
+                    ioi_generator = sk3.ListGenerator(ioi_grammar, ioi_min_length, "ioi")
+            
             # Create Song with or without generators (uses circular buffers for uneven lists)
             self.current_song = sk3.Song(
                 name=name, 
@@ -2084,6 +2198,7 @@ $vel08 -> 110"""
                 pitch_generator=pitch_generator,
                 duration_generator=duration_generator,
                 velocity_generator=velocity_generator,
+                ioi_generator=ioi_generator,
                 generate_every_bar=generate_every_bar
             )
             
@@ -2100,6 +2215,16 @@ $vel08 -> 110"""
             if not velocity_geb:
                 velocity_list = [int(x.strip()) for x in self.velocity_list_var.get().split(',')]
                 self.current_song.velocity_list = velocity_list
+            
+            if not ioi_geb:
+                # Read IOI list from Bar Manipulation tab if it exists
+                ioi_list_str = self.ioi_list_var.get().strip()
+                if ioi_list_str:
+                    ioi_list = [float(x.strip()) for x in ioi_list_str.split(',') if x.strip()]
+                    self.current_song.ioi_list = ioi_list
+                    print(f"Song creation: Using IOI list from input field: {ioi_list}")
+                else:
+                    self.current_song.ioi_list = []
             
             # Only generate parameter lists if we're using GEB or if lists aren't already set
             # When generate_every_bar=False and lists are manually set, don't call generate_parameter_lists
