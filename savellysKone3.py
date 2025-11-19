@@ -513,8 +513,17 @@ class Song:
             bar.make_note_list()
             self.bar_list.append(bar)
             prev_onset = onset
-            onset += bar.ioi*len(bar.note_list)
-            print(f"  Bar {i}: onset was {prev_onset}, added {bar.ioi}*{len(bar.note_list)}={bar.ioi*len(bar.note_list)}, new onset={onset}")
+            
+            # Calculate actual bar duration based on IOI values used
+            if bar.ioi_list and len(bar.ioi_list) > 0:
+                # Sum up actual IOI values used for this bar
+                bar_duration = sum(bar.ioi_list[j % len(bar.ioi_list)] for j in range(len(bar.note_list)))
+            else:
+                # Use default IOI for all notes
+                bar_duration = bar.ioi * len(bar.note_list)
+            
+            onset += bar_duration
+            print(f"  Bar {i}: onset was {prev_onset}, bar_duration={bar_duration}, new onset={onset}")
         return
     
     def make_midi_file(self, filename, tempo=120):

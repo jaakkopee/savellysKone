@@ -150,6 +150,65 @@ def parse_grammar(f):
         print(grammar)
     return grammar
 
+def expand_repeats(string):
+    """Expand repeat syntax (items *N) to repeat items N times.
+    Example: (64 66 65 67 *8) becomes 64 66 65 67 64 66 65 67 ... (8 times)
+    The *N must be inside the parentheses, at the end.
+    """
+    result = ""
+    i = 0
+    
+    while i < len(string):
+        if string[i] == "(":
+            # Find matching closing parenthesis
+            paren_depth = 1
+            j = i + 1
+            while j < len(string) and paren_depth > 0:
+                if string[j] == "(":
+                    paren_depth += 1
+                elif string[j] == ")":
+                    paren_depth -= 1
+                j += 1
+            
+            if paren_depth != 0:
+                raise ValueError(f"Unmatched parentheses in: {string}")
+            
+            # Extract content between parentheses (excluding ( and ))
+            paren_content = string[i+1:j-1].strip()
+            
+            # Check if content ends with *N
+            # Look for the last * in the content
+            last_star_idx = paren_content.rfind('*')
+            
+            if last_star_idx != -1:
+                # Check if after * there's only digits and whitespace
+                after_star = paren_content[last_star_idx+1:].strip()
+                if after_star.isdigit():
+                    # This is a repeat!
+                    repeat_count = int(after_star)
+                    # Get the content before *N
+                    content_before_star = paren_content[:last_star_idx].strip()
+                    
+                    # Recursively expand any nested repeats in the content
+                    if "(" in content_before_star:
+                        content_before_star = expand_repeats(content_before_star)
+                    
+                    # Repeat the content
+                    repeated = " ".join([content_before_star] * repeat_count)
+                    result += repeated
+                    i = j
+                    continue
+            
+            # No valid *N found, recursively expand content and add parentheses back
+            expanded_content = expand_repeats(paren_content)
+            result += "(" + expanded_content + ")"
+            i = j
+        else:
+            result += string[i]
+            i += 1
+    
+    return result
+
 def generate_from_symbol(grammar, symbol):
     options = [rule.rhs for rule in grammar.rules if rule.lhs == symbol]
     if options:
@@ -176,9 +235,16 @@ def generate_from_string(grammar, string):
 
 def generate(grammar, symbol, depth):
     if depth == 0:
-        return symbol
+        # Base case: no more recursion, but still expand repeats
+        return expand_repeats(symbol)
     else:
-        return generate(grammar, generate_from_string(grammar, symbol), depth - 1)
+        # Recursive case: expand grammar rules first
+        expanded = generate_from_string(grammar, symbol)
+        # Then recurse with the expanded string
+        result = generate(grammar, expanded, depth - 1)
+        # After all recursion is complete, expand repeats on the final result
+        # This happens as we unwind the recursion
+        return expand_repeats(result)
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
