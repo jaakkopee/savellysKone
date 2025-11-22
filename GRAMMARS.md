@@ -366,6 +366,38 @@ $S -> 0.5 0.5 0.25 0.25    # Quarter, quarter, eighth, eighth spacing
 - Duration = how long a note sounds
 - IOI = when the next note starts
 
+**Creating Chords with IOI:**
+
+You can create chords by using `0.0` for the IOI values of notes that should sound simultaneously:
+
+```
+# Triad chord (3 notes sounding together)
+$S -> 0.0 0.0 1.0
+
+# Two triads with a gap between them
+$S -> 0.0 0.0 1.0 0.0 0.0 1.0
+
+# Mixed: chord, then melody
+$S -> 0.0 0.0 0.5 0.25 0.25 0.5
+```
+
+**How it works:**
+- When IOI = `0.0`, the next note starts at the same time as the current note
+- When IOI = `1.0`, the next note starts 1 second after the current note
+- The last IOI in each chord group should be non-zero to move time forward
+
+**Example: Chord progression**
+```
+# Pitch: C major, F major, G major, C major (triads)
+$PITCH -> 60 64 67 65 69 72 67 71 74 60 64 67
+
+# IOI: Create 4 chords
+$IOI -> 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0
+
+# Duration: Hold each chord note
+$DUR -> (1.0 *12)
+```
+
 **Example grammars:**
 ```
 # Steady eighth notes
@@ -379,6 +411,12 @@ $S -> (0.5 0.25 0.125 0.125 *8)
 
 # Polyrhythm
 $S -> [0.33|0.5|0.25]
+
+# Chord pattern (triad every 2 seconds)
+$S -> (0.0 0.0 2.0 *8)
+
+# Alternating chords and melody
+$S -> (0.0 0.0 1.0 0.5 0.5 *4)
 ```
 
 ## Complete Examples
@@ -418,11 +456,15 @@ $DUR -> (1.0 *14)
 
 # Velocity
 $VEL -> (80 *42)
+
+# IOI - Create chords (3 notes per chord)
+$IOI -> (0.0 0.0 1.0 *14)
 ```
 - I-IV-V-I progression
-- Each chord is 3 notes
+- Each chord is 3 notes that sound simultaneously (using IOI 0.0 0.0 1.0)
 - Whole note durations
 - Consistent velocity
+- The IOI pattern creates chords: first two notes have 0.0 (simultaneous), third has 1.0 (advances time)
 
 ### Example 4: Rhythmic Pattern with Accents
 
@@ -483,7 +525,36 @@ $DUR2 -> (0.3 *63)
 - Voice 2: different subdivision (0.375s)
 - Create as separate songs/tracks
 
-### Example 7: Call and Response
+### Example 7: Chords and Arpeggios
+
+```
+# Pitch: Chord progression with arpeggios
+$PITCH -> ($Cmaj $Cmaj_arp $Fmaj $Fmaj_arp $Gmaj $Gmaj_arp $Cmaj *1)
+
+$Cmaj -> 60 64 67           # C major triad
+$Cmaj_arp -> 60 64 67 72    # C major arpeggio
+
+$Fmaj -> 65 69 72           # F major triad
+$Fmaj_arp -> 65 69 72 77    # F major arpeggio
+
+$Gmaj -> 67 71 74           # G major triad
+$Gmaj_arp -> 67 71 74 79    # G major arpeggio
+
+# IOI: Chords use 0.0 for simultaneous notes, arpeggios use 0.25
+$IOI -> (0.0 0.0 1.0) (0.25 0.25 0.25 1.0) (0.0 0.0 1.0) (0.25 0.25 0.25 1.0) (0.0 0.0 1.0) (0.25 0.25 0.25 1.0) (0.0 0.0 1.0)
+
+# Duration
+$DUR -> (1.0 *3) (0.2 *4) (1.0 *3) (0.2 *4) (1.0 *3) (0.2 *4) (1.0 *3)
+
+# Velocity
+$VEL -> (80 *25)
+```
+- Alternates between chords and arpeggios
+- Chords use IOI pattern `0.0 0.0 1.0` for simultaneous notes
+- Arpeggios use IOI pattern `0.25 0.25 0.25 1.0` for sequential notes
+- Creates a varied harmonic texture
+
+### Example 8: Call and Response
 
 ```
 $S -> ($CALL $RESPONSE *4) $CALL
